@@ -1,3 +1,6 @@
-exports.PROCESS_KEYS = [ 'pid', 'memory', 'name' ]
+/** @type {(Function, ..., Function) -> Function} */
+export const pipe =
+  (...fns) =>
+    (...args) =>
+      fns.slice(1).reduce((x, fn) => fn(x), fns[0](...args))
 
-exports.pipe = (...[f1, ...fns]) => (...args) => fns.reduce((x, f) => f(x), f1(...args))

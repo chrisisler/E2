@@ -1,14 +1,19 @@
-import { h, render, Component } from 'preact'
+import { h, render } from 'preact'
+import { Router } from 'preact-router'
+import glamorous from 'glamorous/preact'
 
-console.log('foo')
-// class App extends Component {
-//     render() {
-//         return (
-//             <h1>
-//                 hello
-//             </h1>
-//         )
-//     }
-// }
+import { ViewWithHeader, Header } from './Header'
+import ProcessesView from './ProcessesView'
 
-// render(<App />, document.getElementById('root'))
+const AppView = glamorous.main({
+})
+
+const App = () => (
+  <AppView>
+    <Router>
+      <ViewWithHeader path='/' default View={ProcessesView} />
+    </Router>
+  </AppView>
+)
+
+render(<App />, document.body)
