@@ -3,14 +3,14 @@ import { Link } from 'preact-router'
 import glamorous from 'glamorous/preact'
 import { css } from 'glamor'
 
-const headerHeight = 56
+const headerHeight = 50
 const headerHeightCSS = { height: headerHeight }
 const HeaderWrap = glamorous.nav(headerHeightCSS, {
   position: 'fixed'
   , width: '100vw'
   , top: 0
   , padding: '0 0 0 24px'
-  , backgroundColor: '#ddd'
+  , backgroundColor: '#eee'
 })
 const HeaderLinksList = glamorous.ul(headerHeightCSS, {
   display: 'flex' // flexin' it up
@@ -46,7 +46,7 @@ const viewNameToViewLink = viewName => (
 export const Header = () => (
   <HeaderWrap>
     <HeaderLinksList>
-      {[ 'foo', 'lmao-tho' ].map(viewNameToViewLink)}
+      {[ 'processes', 'settings' ].map(viewNameToViewLink)}
     </HeaderLinksList>
   </HeaderWrap>
 )

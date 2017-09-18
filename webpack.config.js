@@ -1,8 +1,6 @@
-// todo, use es7 stage-1 for class prop initialziers, i.e.: arrow funcs in `class`
-
 const path = require('path')
+// const WebpackDashboardPlugin = require('webpack-dashboard/plugin')
 
-// https://egghead.io/lessons/react-configure-webpack-2-and-babel-for-use-with-preact
 module.exports = {
   entry: './src/index.js'
 
@@ -11,21 +9,20 @@ module.exports = {
     , filename: 'bundle.js'
   }
   , module: {
-    rules: [ {
-      test: /\.jsx?$/i
-      , loader: 'babel-loader'
-      , exclude: /node_modules/
-      , options: {
-        presets: ['env']
-        , plugins: [
-          ['transform-react-jsx', { pragma: 'h' }]
-          , ['transform-class-properties']
-        ]
+    rules: [
+      {
+        test: /\.jsx?$/i
+        , loader: 'babel-loader'
+        , exclude: /node_modules/
+        , options: {
+          presets: ['env']
+          , plugins: [
+            ['transform-react-jsx', { pragma: 'h' }]
+            , ['transform-class-properties']
+          ]
+        }
       }
-    }, {
-      test: /\.css$/
-      , use: [ 'style-loader', 'css-loader' ]
-    } ]
+    ]
   }
 
   // server
@@ -37,4 +34,8 @@ module.exports = {
 
   , target: 'node'
   // , target: 'electron-main'
+
+  // , plugins: [
+  //   new WebpackDashboardPlugin()
+  // ]
 }

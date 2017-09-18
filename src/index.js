@@ -1,19 +1,15 @@
 import { h, render } from 'preact'
 import { Router } from 'preact-router'
-import glamorous from 'glamorous/preact'
 
 import { ViewWithHeader, Header } from './Header'
 import ProcessesView from './ProcessesView'
-
-const AppView = glamorous.main({
-})
+import SettingsView from './SettingsView'
 
 const App = () => (
-  <AppView>
-    <Router>
-      <ViewWithHeader path='/' default View={ProcessesView} />
-    </Router>
-  </AppView>
+  <Router>
+    <ViewWithHeader path='/' View={ProcessesView} default />
+    <ViewWithHeader path='/settings' View={SettingsView} />
+  </Router>
 )
 
 render(<App />, document.body)
