@@ -1,18 +1,23 @@
+/**
+ * Disadvantages:
+ * - Lose access to `this.setState()` callback after async render update.
+ */
+
 import { h, Component } from 'preact'
 
-export default ({ reducer, render: renderWithDispatch }) => class extends Component {
-  state = reducer({ type: '@@compononentWillMount' })
+const curry2 = fn => (x, y) => !y ? y2 => fn(x, y2) : fn(x, y)
 
-  dispatch = type => payload => {
+export default ({ reducer, render: renderDispatch }) => class DispatchableComponent extends Component {
+
+  state = reducer({ type: 'CONSTRUCTOR' }) || {}
+
+  dispatch = curry2((type, payload) => {
     const action = { type, payload }
-    const newState = reducer(action, this.props, this.state)
-    if (newState) {
-      this.setState(newState)
+    const state = reducer(action, this.props, this.state)
+    if (state) {
+      this.setState(state)
     }
-  }
+  })
 
-  render() {
-    const { dispatch, props, state } = this
-    return renderWithDispatch(dispatch, props, state)
-  }
+  render = () => renderDispatch(this.dispatch, this.props, this.state)
 }

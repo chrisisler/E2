@@ -3,7 +3,7 @@ import { Link } from 'preact-router'
 import glamorous from 'glamorous/preact'
 import { css } from 'glamor'
 
-const headerHeight = 50
+const headerHeight = 42
 const headerHeightCSS = { height: headerHeight }
 const HeaderWrap = glamorous.nav(headerHeightCSS, {
   position: 'fixed'
@@ -11,6 +11,7 @@ const HeaderWrap = glamorous.nav(headerHeightCSS, {
   , top: 0
   , padding: '0 0 0 24px'
   , backgroundColor: '#eee'
+  , boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.18)'
 })
 const HeaderLinksList = glamorous.ul(headerHeightCSS, {
   display: 'flex' // flexin' it up
@@ -27,7 +28,7 @@ const LinkCSS = css(headerHeightCSS, {
   color: '#000'
   , display: 'flex'
   , position: 'relative'
-  , margin: '0 18px'
+  , margin: '0 12px'
   , flexDirection: 'column'
   , justifyContent: 'center'
   , textDecoration: 'none'
@@ -46,7 +47,7 @@ const viewNameToViewLink = viewName => (
 export const Header = () => (
   <HeaderWrap>
     <HeaderLinksList>
-      {[ 'processes', 'settings' ].map(viewNameToViewLink)}
+      {[ 'processes', 'settings', 'card' ].map(viewNameToViewLink)}
     </HeaderLinksList>
   </HeaderWrap>
 )
@@ -56,12 +57,12 @@ const ViewWrap = glamorous.div({
   , height: `calc(100vh - ${headerHeight}px)`
 })
 
-export const ViewWithHeader = ({ View }) => (
+export const ViewWithHeader = ({ View, ...props }) => (
   <div>
     <Header />
 
     <ViewWrap>
-      <View />
+      <View {...props} />
     </ViewWrap>
   </div>
 )

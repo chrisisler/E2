@@ -19,6 +19,7 @@ module.exports = {
           , plugins: [
             ['transform-react-jsx', { pragma: 'h' }]
             , ['transform-class-properties']
+            , ['transform-object-rest-spread']
           ]
         }
       }

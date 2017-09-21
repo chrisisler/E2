@@ -1,49 +1,16 @@
-/**
- * Left-click a process to highlight only that one.
- * Ctrl + left-click a process to highlight multiple processes.
- * Shift + left-click to highlight all processes between.
- *
- * Right-click on a process to open the context menu.
- *   If the right-click occurred on an already highlighted process,
- *     display the context menu for those highlighted processes.
- *   Otherwise, clear the highlighted processes, highlight the right-clicked
- *     process, and open the context menu on it.
- *
- * Actions to invoke on a an individual process context menu:
- * - kill
- * - rename
- *
- * Actions to invoke on individual process hover:
- * - Display percent memory used by this process out of all processes.
- * - If there are more than one instances of processes of this name,
- *   display how many and their total memory usage, and their total memory
- *   usage as a percentage.
- *
- *
- * General actions
- * - sort
- * - refresh (get fresh batch of processes)
- * - search (fuzzy)
- *
- * Status bar information (fixed to bottom):
- * - Number of processes
- * - Number of processes highlighted
- * - Sum memory (from all processes) out of total memory.
- * - Up arrow icon, on click: scroll to top.
- */
-
-import { h } from 'preact'
+import { h, Component } from 'preact'
 import glamorous from 'glamorous/preact'
 
 import DispatchableComponent from './DispatchableComponent'
-import getProcessesSync from './getProcesses'
-import { getUniqId } from './shared'
+// import InfoBar from './InfoBar'
 
 const ProcRow = glamorous.div({
   display: 'flex'
   , textAlign: 'center'
-})
-
+  , userSelect: 'none'
+}, props => ({
+  backgroundColor: props.isMarked ? '#b2ebf2' : 'inherit' // TODO use a less saturated color
+}))
 const ProcData = glamorous.p({
   padding: 0
   , display: 'inline'
@@ -62,11 +29,15 @@ export default DispatchableComponent({
   render: (dispatch, props, state) => (
     <section>
       <Heading />
-      {state.processes.map(proc => (
-        <ProcRow key={getUniqId()}>
-          <ProcData>{proc.name}</ProcData>
-          <ProcData>{proc.pid}</ProcData>
-          <ProcData>{proc.memory}</ProcData>
+      {props.processes.map((procObj, procIndex) => (
+        <ProcRow
+          key={procObj.pid}
+          onClick={event => dispatch('LEFT_CLICK', { event, procObj, procIndex })}
+          isMarked={procObj.isMarked}
+        >
+          <ProcData>{procObj.name}</ProcData>
+          <ProcData>{procObj.pid}</ProcData>
+          <ProcData>{procObj.memory}</ProcData>
         </ProcRow>
       ))}
     </section>
@@ -74,7 +45,46 @@ export default DispatchableComponent({
 
   reducer: (action, props, state) => {
     switch (action.type) {
-      case '@@compononentWillMount': return { processes: getProcessesSync() }
+      // `marksMap` is a Map of (index: Number, procObj: Object).
+      // We use it to propagate changes the the top-level `props.dispatch`.
+      case 'CONSTRUCTOR': return { marksMap: new Map() }
+
+      case 'LEFT_CLICK': {
+        const { event, procObj, procIndex } = action.payload
+        let { marksMap } = state
+
+        // If no modifier keys, only highlight the clicked process (unhighlight all others).
+        if (!event.altKey && !event.shiftKey) {
+          props.dispatch('UNMARK_PROCESSES', { indexes: [...marksMap.keys()] })
+          props.dispatch('MARK_PROCESSES', { indexes: [ procIndex ] })
+          marksMap = new Map().set(procIndex, procObj)
+        }
+        // If ALT + left-click, add the clicked process to the marksMap.
+        else if (event.altKey) {
+          props.dispatch('MARK_PROCESSES', { indexes: [ procIndex ] })
+          marksMap.set(procIndex, procObj)
+        }
+        // If SHIFT + left-click, todo
+        else if (event.shiftKey) {
+          const last = x => x[x.length - 1]
+          const range = (start, end) => [...Array(end - start)].map((_, idx) => idx + start)
+          const lastIndex = last([...marksMap.keys()])
+
+          // Mark every process between `lastIndex` and `procIndex`.
+          const indexes = (lastIndex < procIndex)
+            ? range(lastIndex, procIndex + 1) // need `+1` because procIndex is not yet marked.
+            : range(procIndex, lastIndex)
+          props.dispatch('MARK_PROCESSES', { indexes })
+
+          indexes.forEach(index => {
+            marksMap.set(index, props.processes[index])
+          })
+        }
+
+        return { marksMap }
+      }
+
+      default: throw new Error(`defaulted: action.type is ${action.type}`)
     }
   }
 })
