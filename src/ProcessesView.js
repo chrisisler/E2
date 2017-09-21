@@ -27,20 +27,23 @@ const Heading = () => (
 
 export default DispatchableComponent({
   render: (dispatch, props, state) => (
-    <section>
+    <glamorous.Section padding={16} >
       <Heading />
-      {props.processes.map((procObj, procIndex) => (
-        <ProcRow
-          key={procObj.pid}
-          onClick={event => dispatch('LEFT_CLICK', { event, procObj, procIndex })}
-          isMarked={procObj.isMarked}
-        >
-          <ProcData>{procObj.name}</ProcData>
-          <ProcData>{procObj.pid}</ProcData>
-          <ProcData>{procObj.memory}</ProcData>
-        </ProcRow>
-      ))}
-    </section>
+      <glamorous.Div overflow='scroll' height='80vh'>
+        {props.processes.map((procObj, procIndex) => (
+          <ProcRow
+            key={procObj.pid}
+            onClick={event => dispatch('LEFT_CLICK', { event, procObj, procIndex })}
+            onContextMenu={event => dispatch('RIGHT_CLICK', { event, procObj })}
+            isMarked={procObj.isMarked}
+          >
+            <ProcData>{procObj.name}</ProcData>
+            <ProcData>{procObj.pid}</ProcData>
+            <ProcData>{procObj.memory}</ProcData>
+          </ProcRow>
+        ))}
+      </glamorous.Div>
+    </glamorous.Section>
   ),
 
   reducer: (action, props, state) => {
@@ -48,6 +51,13 @@ export default DispatchableComponent({
       // `marksMap` is a Map of (index: Number, procObj: Object).
       // We use it to propagate changes the the top-level `props.dispatch`.
       case 'CONSTRUCTOR': return { marksMap: new Map() }
+
+      case 'RIGHT_CLICK' : {
+        const { pageX: x, pageY: y } = event
+        const actions = getActions(state.marksMap)
+        const actionsMenuComponent = <ActionsMenu actions={actions} x={x} y={y} />
+        render(actionsMenuComponent, document.body)
+      }
 
       case 'LEFT_CLICK': {
         const { event, procObj, procIndex } = action.payload
