@@ -9,7 +9,7 @@ const HeaderWrap = glamorous.nav(headerHeightCSS, {
   position: 'fixed'
   , width: '100vw'
   , top: 0
-  , padding: '0 0 0 24px'
+  , padding: '4px 0 0 16px'
   , backgroundColor: '#eee'
   , boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.18)'
 })
@@ -28,7 +28,7 @@ const LinkCSS = css(headerHeightCSS, {
   color: '#000'
   , display: 'flex'
   , position: 'relative'
-  , margin: '0 12px'
+  , margin: '0 0 0 20px'
   , flexDirection: 'column'
   , justifyContent: 'center'
   , textDecoration: 'none'
@@ -38,7 +38,7 @@ const LinkCSS = css(headerHeightCSS, {
 const viewNameToViewLink = viewName => (
   <HeaderLink>
     <Link href={`/${viewName}`} {...LinkCSS}>
-      {viewName}
+      {viewName.toUpperCase()}
     </Link>
   </HeaderLink>
 )
@@ -47,7 +47,7 @@ const viewNameToViewLink = viewName => (
 export const Header = () => (
   <HeaderWrap>
     <HeaderLinksList>
-      {[ 'processes', 'settings', 'card' ].map(viewNameToViewLink)}
+      {[ 'processes', 'settings', 'details' ].map(viewNameToViewLink)}
     </HeaderLinksList>
   </HeaderWrap>
 )

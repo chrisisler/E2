@@ -35,7 +35,7 @@ export async function() {
 /**
  * %cpu: percantage cpu usage
  * %mem: percentage memory usage
- * rss:
+ * rss: memory (?)
  * etime: elapsed running time
  * ppid: parent process id
  *     - if this exists, use this pid value to show a button
@@ -51,6 +51,6 @@ export async function() {
  */
 /** @type {String -> Object} */
 export const getDetailedProcessObj = pid => {
-  const cmdOutputStr = cp.execSync(`ps -p ${pid} -cxo %cpu=,%mem=,rss=,etime=,ppid=,user=,stat=`, { encoding: 'utf8' })
-  return makeDetailedProcessObjFromStr(cmdOutputStr)
+  const commandOutputStr = cp.execSync(`ps -p ${pid} -cxo pid=,rss=,command=,%cpu=,%mem=,etime=,ppid=,user=,stat=`, { encoding: 'utf8' })
+  return makeDetailedProcessObjFromStr(commandOutputStr)
 }

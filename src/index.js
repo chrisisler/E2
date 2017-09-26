@@ -1,10 +1,9 @@
 import { h, render } from 'preact'
 import { Router } from 'preact-router'
-
-import { ViewWithHeader, Header } from './Header'
+import { ViewWithHeader } from './Header'
 import ProcessesView from './ProcessesView'
 import SettingsView from './SettingsView'
-import CardView from './CardView'
+import DetailsView from './DetailsView'
 import { getProcessesSync } from './getProcesses'
 import DispatchableComponent from './DispatchableComponent'
 
@@ -15,7 +14,7 @@ import DispatchableComponent from './DispatchableComponent'
  * @param {Boolean} doSetMark
  * @returns {Object} - The new state.
  */
-const handleMarkProcessesReducer = (payload, state, doSetMark) => {
+const markProcessesReducer = (payload, state, doSetMark) => {
   let { processes } = state
   payload.indexes.forEach(index => {
     processes[index].isMarked = doSetMark
@@ -26,16 +25,16 @@ const handleMarkProcessesReducer = (payload, state, doSetMark) => {
 const App = DispatchableComponent({
   render: (dispatch, props, state) => (
     <Router>
-      <ViewWithHeader path='/processes' View={ProcessesView} processes={state.processes} dispatch={dispatch} default />
-      <ViewWithHeader path='/card'      View={CardView}      processes={state.processes} />
+      <ViewWithHeader path='/' View={ProcessesView} processes={state.processes} dispatch={dispatch} default />
+      <ViewWithHeader path='/details'   View={DetailsView}   processes={state.processes} />
       <ViewWithHeader path='/settings'  View={SettingsView} />
     </Router>
   ),
   reducer: (action, props, state) => {
     switch (action.type) {
       case 'CONSTRUCTOR': return { processes: getProcessesSync() }
-      case 'MARK_PROCESSES': return handleMarkProcessesReducer(action.payload, state, true)
-      case 'UNMARK_PROCESSES': return handleMarkProcessesReducer(action.payload, state, false)
+      case 'MARK_PROCESSES': return markProcessesReducer(action.payload, state, true)
+      case 'UNMARK_PROCESSES': return markProcessesReducer(action.payload, state, false)
       default: throw new Error(`defaulted: action.type is ${action.type}`)
     }
   }
