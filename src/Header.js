@@ -34,35 +34,35 @@ const LinkCSS = css(headerHeightCSS, {
   , textDecoration: 'none'
 })
 
-// TODO highlight the currently selected view
-const viewNameToViewLink = viewName => (
+// TODO highlight the currently selected route
+const routeNameToLink = routeName => (
   <HeaderLink>
-    <Link href={`/${viewName}`} {...LinkCSS}>
-      {viewName.toUpperCase()}
+    <Link href={`/${routeName}`} {...LinkCSS}>
+      {routeName.toUpperCase()}
     </Link>
   </HeaderLink>
 )
 
-// TODO Put views into `./shared.js`
+// TODO Put all route names into some shared js file in an array.
 export const Header = () => (
   <HeaderWrap>
     <HeaderLinksList>
-      {[ 'processes', 'settings', 'details' ].map(viewNameToViewLink)}
+      {[ 'processes', 'settings', 'details' ].map(routeNameToLink)}
     </HeaderLinksList>
   </HeaderWrap>
 )
 
-const ViewWrap = glamorous.div({
+const RouteWrap = glamorous.div({
   marginTop: headerHeight
   , height: `calc(100vh - ${headerHeight}px)`
 })
 
-export const ViewWithHeader = ({ View, ...props }) => (
+export const RouteWithHeader = ({ RouteComponent, ...props }) => (
   <div>
     <Header />
 
-    <ViewWrap>
-      <View {...props} />
-    </ViewWrap>
+    <RouteWrap>
+      <RouteComponent {...props} />
+    </RouteWrap>
   </div>
 )

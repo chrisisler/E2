@@ -1,37 +1,46 @@
+/**
+ * TODO
+ * - Write `getProcessesAsync` (for the "refresh processes" feature).
+ *   - Use async/await for `getProcessesAsync`.
+ */
+
 import cp from 'child_process'
 import os from 'os'
 
 const makeProcessObjFromStr = s => {
-  const [ pid, memory, name ] = s.split(' ')
-  return { pid, memory, name }
+    const [ pid, memory, name ] = s.split(' ')
+    return { pid, memory, name }
 }
 
-const stripExtraWhitespace = s => s.trim().replace(/\s+/g, ' ')
-
-const getProcesses = string => string
-  .split(os.EOL)
-  .map(stripExtraWhitespace)
-  .filter(Boolean)
-  .map(makeProcessObjFromStr)
-
-const makeDetailedProcessObjFromStr = s => {
-  s = stripExtraWhitespace(s)
-  const [ percentCPU, percentMemory, memory, runningTime, parentPID, user, status ] = s.split(' ')
-  return { percentCPU, percentMemory, memory, runningTime, parentPID, user, status }
-}
-
-export const getProcessesSync = () => {
-  const processes = cp.execSync('ps -axco pid=,rss=,command=', { encoding: 'utf8' })
-  return getProcesses(processes)
-}
+/** @type {String -> String} */
+const stripExtraWhitespace = str => str.trim().replace(/\s+/g, ' ')
 
 /**
-export async function() {
-  const processes = await cp.execSync('ps -axco pid=,rss=,command=', { encoding: 'utf8' })
-  return getProcesses(processes)
-}
-*/
+ * @private
+ * @param {String} string - The input of the CLI command.
+ * @returns {[Object]} processes - An array of the computer's current running processes as objects.
+ */
+const _getProcesses = str => str
+    .split(os.EOL)
+    .map(stripExtraWhitespace)
+    .filter(Boolean)
+    .map(makeProcessObjFromStr)
 
+
+/**
+ * This is the important export.
+ * @returns {[Object]} processes - Retrieved synchronously.
+ */
+export const getProcessesSync = () =>
+    _getProcesses(cp.execSync('ps -axco pid=,rss=,command=', { encoding: 'utf8' }))
+
+
+/** @type {String -> Object} */
+const makeDetailedProcessObjFromStr = str => {
+    str = stripExtraWhitespace(str)
+    const [ percentCPU, percentMemory, memory, runningTime, parentPID, user, status ] = str.split(' ')
+    return { percentCPU, percentMemory, memory, runningTime, parentPID, user, status }
+}
 /**
  * %cpu: percantage cpu usage
  * %mem: percentage memory usage
@@ -48,9 +57,11 @@ export async function() {
  * - How many processes of this name
  *     - if not singular process, display %cpu, %mem, and rss for
  *       the summated process.
+ *
+ * @param {String} pid - The process ID of some process object.
+ * @returns {Object} - An enhanced process object with more properties.
  */
-/** @type {String -> Object} */
 export const getDetailedProcessObj = pid => {
-  const commandOutputStr = cp.execSync(`ps -p ${pid} -cxo pid=,rss=,command=,%cpu=,%mem=,etime=,ppid=,user=,stat=`, { encoding: 'utf8' })
-  return makeDetailedProcessObjFromStr(commandOutputStr)
+    const commandOutputStr = cp.execSync(`ps -p ${pid} -cxo pid=,rss=,command=,%cpu=,%mem=,etime=,ppid=,user=,stat=`, { encoding: 'utf8' })
+    return makeDetailedProcessObjFromStr(commandOutputStr)
 }

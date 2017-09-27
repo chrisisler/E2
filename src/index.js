@@ -1,43 +1,42 @@
 import { h, render } from 'preact'
 import { Router } from 'preact-router'
-import { ViewWithHeader } from './Header'
-import ProcessesView from './ProcessesView'
-import SettingsView from './SettingsView'
-import DetailsView from './DetailsView'
+import { RouteWithHeader } from './Header'
+
+import ProcessesRoute from './routes/ProcessesRoute'
+import SettingsRoute from './routes/SettingsRoute'
+import DetailsRoute from './routes/DetailsRoute'
 import { getProcessesSync } from './getProcesses'
-import DispatchableComponent from './DispatchableComponent'
+import DispatchComponent from './DispatchComponent'
+import {
+    markProcessesReducer
+    , leftClickProcessReducer
+    , rightClickProcessReducer
+} from './reducers'
 
-/**
- * @param {Object} payload
- * @param {[Number]} payload.indexes - An array of numbers, some indexes of `state.processes`.
- * @param {Object} state
- * @param {Boolean} doSetMark
- * @returns {Object} - The new state.
- */
-const markProcessesReducer = (payload, state, doSetMark) => {
-  let { processes } = state
-  payload.indexes.forEach(index => {
-    processes[index].isMarked = doSetMark
-  })
-  return { processes }
-}
+// TODO Add state attribute for ActionsMenu ref.
+const getInitialState = () => ({
+    processes: getProcessesSync()
+    , markedProcessesMap: new Map()
+})
 
-const App = DispatchableComponent({
-  render: (dispatch, props, state) => (
-    <Router>
-      <ViewWithHeader path='/' View={ProcessesView} processes={state.processes} dispatch={dispatch} default />
-      <ViewWithHeader path='/details'   View={DetailsView}   processes={state.processes} />
-      <ViewWithHeader path='/settings'  View={SettingsView} />
-    </Router>
-  ),
-  reducer: (action, props, state) => {
-    switch (action.type) {
-      case 'CONSTRUCTOR': return { processes: getProcessesSync() }
-      case 'MARK_PROCESSES': return markProcessesReducer(action.payload, state, true)
-      case 'UNMARK_PROCESSES': return markProcessesReducer(action.payload, state, false)
-      default: throw new Error(`defaulted: action.type is ${action.type}`)
+const App = DispatchComponent({
+    render: store => (
+        <Router>
+            <RouteWithHeader path='/' default RouteComponent={ProcessesRoute} store={store} />
+            <RouteWithHeader path='/details' RouteComponent={DetailsRoute} store={store} />
+            <RouteWithHeader path='/settings' RouteComponent={SettingsRoute} />
+        </Router>
+    ),
+    reducer: (action, store) => {
+        switch (action.type) {
+            case 'CONSTRUCTOR': return getInitialState()
+            case 'MARK_PROCESSES': return markProcessesReducer(store, action.payload, true)
+            case 'UNMARK_PROCESSES': return markProcessesReducer(store, action.payload, false)
+            case 'LEFT_CLICK_PROCESS': return leftClickProcessReducer(store, action.payload)
+            case 'RIGHT_CLICK_PROCESS': return rightClickProcessReducer(store, action.payload)
+            default: throw new Error(`Unsupported action.type: ${action.type}`)
+        }
     }
-  }
 })
 
 render(<App />, document.body)
