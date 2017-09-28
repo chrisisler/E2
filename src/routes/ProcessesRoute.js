@@ -11,16 +11,25 @@ const ProcRow = glamorous.div({
     backgroundColor: props.isMarked ? '#b2ebf2' : 'inherit'
 }))
 const ProcData = glamorous.p({
-    padding: 0
+    padding: 16
+    , margin: 0
     , display: 'inline'
     , width: '33.3%'
-})
+}, props => ({
+    transition: 'background-color ease 300ms'
+    , ':hover': {
+        backgroundColor: props.isTitle ? '#b2ebf2' : 'inherit'
+        , cursor: 'pointer'
+    }
+}))
 
-const Heading = () => (
+const Heading = ({ dispatch }) => (
     <ProcRow css={{ borderBottom: '2px solid #eee', fontWeight: 600 }}>
-        <ProcData>NAME</ProcData>
-        <ProcData>PID</ProcData>
-        <ProcData>MEMORY</ProcData>
+        {[ 'name', 'pid', 'memory' ].map(key => (
+            <ProcData isTitle onClick={() => dispatch({ type: 'SORT_PROCESSES', payload: { key } })}>
+                {key.toUpperCase()}
+            </ProcData>
+        ))}
     </ProcRow>
 )
 
@@ -28,8 +37,8 @@ export default ({ store }) => {
     const processRows = store.getState().processes.map((procObj, procIndex) => (
         <ProcRow
             key={procObj.pid}
-            onClick={event => store.dispatch('LEFT_CLICK_PROCESS', { event, procObj, procIndex })}
-            onContextMenu={event => store.dispatch('RIGHT_CLICK_PROCESS', { event, procObj, procIndex })}
+            onClick={event => store.dispatch({ type: 'LEFT_CLICK_PROCESS', payload: { event, procObj, procIndex } })}
+            onContextMenu={event => store.dispatch({ type: 'RIGHT_CLICK_PROCESS', payload: { event, procObj, procIndex } })}
             isMarked={procObj.isMarked}
         >
             <ProcData>{procObj.name}</ProcData>
@@ -40,7 +49,7 @@ export default ({ store }) => {
 
     return (
         <glamorous.Section padding={16} >
-            <Heading />
+            <Heading dispatch={store.dispatch} />
             <glamorous.Div overflow='scroll' height='80vh'>
                 {processRows}
             </glamorous.Div>

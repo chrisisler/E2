@@ -1,8 +1,3 @@
-/**
- * This is the reducers file.
- * Reducers receive (store, payload [, maybeMoreArgs]) -> newState
- */
-
 import { h, render } from 'preact'
 import { killProcess } from './killProcess'
 import ActionsMenu from './ActionsMenu' // TODO For `rightClickProcessReducer`
@@ -45,14 +40,14 @@ export function leftClickProcessReducer(store, payload) {
     if (!event.altKey && !event.shiftKey) {
         const indexes = [...markedProcessesMap.keys()]
         if (indexes.length > 0) {
-            store.dispatch('UNMARK_PROCESSES', { indexes })
+            store.dispatch({ type: 'UNMARK_PROCESSES', payload: { indexes } })
         }
-        store.dispatch('MARK_PROCESSES', { indexes: [ procIndex ] })
+        store.dispatch({ type: 'MARK_PROCESSES', payload: { indexes: [ procIndex ] } })
         markedProcessesMap = new Map().set(procIndex, procObj)
     }
     // If ALT + left-click, add the clicked process to the markedProcessesMap.
     else if (event.altKey) {
-        store.dispatch('MARK_PROCESSES', { indexes: [ procIndex ] })
+        store.dispatch({ type: 'MARK_PROCESSES', payload: { indexes: [ procIndex ] } })
         markedProcessesMap.set(procIndex, procObj)
     }
     // If SHIFT + left-click, todo
@@ -65,7 +60,7 @@ export function leftClickProcessReducer(store, payload) {
         const indexes = (lastIndex < procIndex)
             ? range(lastIndex, procIndex + 1) // need `+1` because procIndex is not yet marked.
             : range(procIndex, lastIndex)
-        store.dispatch('MARK_PROCESSES', { indexes })
+        store.dispatch({ type: 'MARK_PROCESSES', payload: { indexes } })
 
         indexes.forEach(index => {
             markedProcessesMap.set(index, store.processes[index])
@@ -104,7 +99,7 @@ const getActions = (markedProcessesMap, dispatch) => {
             onKeyDown={event => {
                 if (event.key === 'Enter') {
                     const newName = event.target.value
-                    dispatch('RENAME_PROCESS', { newName, procIndex })
+                    dispatch({ type: 'RENAME_PROCESS', payload: { newName, procIndex } })
                 }
             }}
         />
@@ -119,15 +114,18 @@ const getActions = (markedProcessesMap, dispatch) => {
 }
 
 /**
+ * Modifies DOM outside of Preact.
+ *
  * @param {Object} store - Contains: `getState` func and `dispatch` func.
  * @param {Object} payload - Data which changes state in some way.
  * @returns {Object} - The new app state. Updates the `actionsMenuNode` property.
  */
 export function closeActionsMenuReducer(store) {
-    // Should the `remove` call go here?
-    const node = store.getState().actionsMenuNode
-    document.getElementById(node.id).remove()
-
+    const ref = store.getState().actionsMenuNode
+    if (ref) {
+        const domNode = document.getElementById(ref.id)
+        domNode.remove()
+    }
     return { actionsMenuNode: null }
 }
 
@@ -144,47 +142,44 @@ export function renameProcessReducer(store, payload) {
     // Are we supposed to grab the object returned by this dispatch and attach it to
     // our returned object? If we choose to do that, we will have to beconsistent and
     // do that for _all_ dispatch calls inside a reducer. Could be bad for perf?
-    store.dispatch('CLOSE_ACTIONS_MENU', 'fuck')
+    store.dispatch({ type: 'CLOSE_ACTIONS_MENU' })
     return { processes }
 }
-
-/**
- * Helper func. NOT a reducer.
- * @see rightClickProcessReducer
- * @param {[Object]} actions
- * @param {[Object]} actions
- * @param {[Object]} actions
- * @returns {DOMNode}
- */
 
 /** @type {(Object, Object) -> newState: Object} */
 export function rightClickProcessReducer(store, payload) {
     const { procObj, event, procIndex } = payload
     const state = store.getState()
 
-    // TODO Destory the previous ActionsMenu component node before rendering the new one.
-    // In actuality, this conditional just checks to see if the actions menu was _previously_ rendered.
-    // Maybe a reducer case is needed for setting state for this property back to `null`.
-    console.log('right clicked')
-    console.log('state.actionsMenuNode is:', state.actionsMenuNode)
     if (state.actionsMenuNode) {
-        console.log('inside conditional')
-        // console.log('state.actionsMenuNode is:', state.actionsMenuNode)
-        store.dispatch('CLOSE_ACTIONS_MENU')()
+        store.dispatch({ type: 'CLOSE_ACTIONS_MENU' })
     }
 
     if (state.markedProcessesMap.size > 0 && !procObj.isMarked) {
-        store.dispatch('UNMARK_PROCESSES', { indexes: [...state.markedProcessesMap.keys()] })
+        store.dispatch({ type: 'UNMARK_PROCESSES', payload: { indexes: [...state.markedProcessesMap.keys()] } })
     }
-    store.dispatch('MARK_PROCESSES', { indexes: [ procIndex ] })
+    store.dispatch({ type: 'MARK_PROCESSES', payload: { indexes: [ procIndex ] } })
 
     const markedProcessesMap = new Map(state.markedProcessesMap).set(procIndex, procObj)
     const actions = getActions(markedProcessesMap, store.dispatch)
-
-    const actionsMenu = <ActionsMenu store={store} actions={actions} x={event.pageX} y={event.pageY}/>
-
-    // TODO fix double rendering issue (occurs when right-click on two different rows)
-    const actionsMenuNode = render(actionsMenu, document.getElementById('actions-menu-wrap'))
+    const actionsMenu = <ActionsMenu store={store} actions={actions} x={event.pageX} y={event.pageY} />
+    const actionsMenuNode = render(actionsMenu, document.body)
 
     return { markedProcessesMap, actionsMenuNode }
+}
+
+export function sortProcessesReducer(store, payload) {
+    const keyToSortBy = payload.key
+    let { doReverseSort, processes } = store.getState()
+
+    processes = processes.sort((p1, p2) => {
+        // TODO Handle lower vs upper case for strings.
+    })
+
+    if (doReverseSort) {
+        processes = processes.reverse()
+        doReverseSort = !doReverseSort
+    }
+
+    return { processes, doReverseSort }
 }

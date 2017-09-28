@@ -12,6 +12,7 @@ const getInitialState = () => ({
     processes: getProcessesSync()
     , markedProcessesMap: new Map()
     , actionsMenuNode: null
+    , doReverseSort: false
 })
 
 const App = DispatchComponent({
@@ -32,6 +33,7 @@ const App = DispatchComponent({
             case 'RIGHT_CLICK_PROCESS': return reducers.rightClickProcessReducer(store, action.payload)
             case 'RENAME_PROCESS'     : return reducers.renameProcessReducer(store, action.payload)
             case 'CLOSE_ACTIONS_MENU' : return reducers.closeActionsMenuReducer(store)
+            case 'SORT_PROCESSES'     : return reducers.sortProcessesReducer(store, action.payload)
             default: throw new Error(`Unsupported action.type: ${action.type}`)
         }
     }

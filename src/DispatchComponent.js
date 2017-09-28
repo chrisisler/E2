@@ -1,47 +1,28 @@
 /**
  * Disadvantage:
  * - Lose access to `this.setState()` callback after async render update.
+ * - Lose access to lifecycle hooks like willMount, didMount, etc. (unless explicity reducer'd).
  */
 
+/* eslint-disable no-unused-vars */
 import { h, Component } from 'preact'
 
-/**
- * Curries a binary function, enabling buttery-smooth partial application.
- * @type {Function -> Function}
- */
-const curry2 = fn => (x, y) => !y ? y2 => fn(x, y2) : fn(x, y)
-
 export default ({ reducer, render: renderWithStore }) => class extends Component {
-    state = reducer({ type: 'CONSTRUCTOR' }) || {}
+    constructor() {
+        super(...arguments)
 
-    dispatch = curry2((type, payload) => {
-        // TODO Reduce duplication. (Put store on `this`?)
-        const store = {
+        this.state = reducer({ type: 'CONSTRUCTOR' }) || {}
+        this.store = {
             dispatch: this.dispatch
             , getState: () => this.state
         }
-
-        const action = { type, payload }
-        const newState = reducer(action, store, this.props)
-        if (newState) this.setState(newState)
-    })
-
-    // dispatch = ({ type, payload }) => {
-    //     const store = {
-    //         dispatch: this.dispatch
-    //         , getState: () => this.state
-    //     }
-
-    //     const action = { type, payload }
-    //     const newState = reducer(action, store, this.props)
-    //     if (newState) this.setState(newState)
-    // }
-
-    render() {
-        const store = {
-            dispatch: this.dispatch,
-            getState: () => this.state
-        }
-        return renderWithStore(store, this.props)
     }
+
+    dispatch = ({ type, payload }) => {
+        const action = { type, payload }
+        const newState = reducer(action, this.store, this.props)
+        if (newState) this.setState(newState)
+    }
+
+    render = () => renderWithStore(this.store, this.props)
 }

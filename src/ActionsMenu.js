@@ -41,29 +41,25 @@ export default class extends Component {
     id = 'actions-menu'
 
     componentDidMount() {
-        document.addEventListener('click', event => {
+        document.addEventListener('click', ({ path }) => {
             // If there's a `getChildComponent` sub-prop in `this.props` then allow
             // users to click on it without closing the actions menu.
-            if (!event.path.some(node => [...node.classList].includes('persist-on-click'))) {
-                // this.hide()
-                this.props.store.dispatch('CLOSE_ACTIONS_MENU')()
+            if (!path.filter(x => x.classList).some(x => [...x.classList].includes('persist-on-click'))) {
+                this.props.store.dispatch({ type: 'CLOSE_ACTIONS_MENU' })
+                document.removeEventListener('click', document)
             }
-            document.removeEventListener('click', document)
         })
     }
-
-    // hide() {
-        // const thisNode = document.getElementById(this.id)
-        // if (thisNode) {
-        //     thisNode.remove()
-        // }
-    // }
 
     render = ({ actions, x, y }) => (
         <ActionsMenuWrap x={x} y={y} id={this.id}>
             <ActionsList>
                 {actions.map(({ text, effect, getChildComponent, persistOnClick }) => (
-                    <ActionItem onClick={() => { effect && effect() }} className={persistOnClick && 'persist-on-click'} key={text}>
+                    <ActionItem
+                        key={text}
+                        onClick={() => { effect && effect() }}
+                        className={persistOnClick && 'persist-on-click'}
+                    >
                         {text}
                         {getChildComponent && getChildComponent()}
                     </ActionItem>
