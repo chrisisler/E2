@@ -1,6 +1,5 @@
 import { h } from 'preact'
 import glamorous from 'glamorous/preact'
-
 // import InfoBar from './InfoBar'
 
 const ProcRow = glamorous.div({
@@ -8,7 +7,8 @@ const ProcRow = glamorous.div({
     , textAlign: 'center'
     , userSelect: 'none'
 }, props => ({
-    backgroundColor: props.isMarked ? '#b2ebf2' : 'inherit' // TODO use a less saturated color
+    // TODO use a less saturated color
+    backgroundColor: props.isMarked ? '#b2ebf2' : 'inherit'
 }))
 const ProcData = glamorous.p({
     padding: 0

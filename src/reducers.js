@@ -3,6 +3,8 @@
  * Reducers receive (store, payload [, maybeMoreArgs]) -> newState
  */
 
+import { h, render } from 'preact'
+import { killProcess } from './killProcess'
 import ActionsMenu from './ActionsMenu' // TODO For `rightClickProcessReducer`
 
 /**
@@ -75,39 +77,101 @@ export function leftClickProcessReducer(store, payload) {
 
 
 /**
- * Guaranteed non-empty input array.
+ * Helper func for `rightClickProcessReducer`.
  * @see rightClickProcessReducer
- * @param {[Object]} procs - An array of objects, the processes.
+ * @param {Map} markedProcessesMap
+ * @param {Function} dispatch - From the top-level (state-manager) `store`.
  * @returns {[Object]} actions
  */
-const getActions = procs => {
+const getActions = (markedProcessesMap, dispatch) => {
+    const procs = [...markedProcessesMap.values()]
     let actions = []
-
-    // Dummy func for now.
-    const killProcess = pid => {}
 
     actions.push({
         text: 'Kill highlighted processes'
+        // TODO also need to update state, do the below instead.
+        // , effect: () => { dispatch('KILL_PROCESSES', procs) }
         , effect: () => { procs.forEach(p => killProcess(p.pid)) }
     })
+
+    if (procs.length === 1) {
+        // TODO async import here on a custom <Input /> component?
+        const procIndex = [...markedProcessesMap.keys()][0]
+        let inputNodeRef
+        const RenameInput = <input
+            placeholder={procs[0].name}
+            ref={node => { inputNodeRef = node }}
+            onKeyDown={event => {
+                if (event.key === 'Enter') {
+                    const newName = event.target.value
+                    dispatch('RENAME_PROCESS', { newName, procIndex })
+                }
+            }}
+        />
+        actions.push({
+            text: 'Rename process: '
+            , getChildComponent: () => RenameInput
+            , effect: () => { inputNodeRef.focus() }
+            , persistOnClick: true
+        })
+    }
     return actions
 }
 
-/** @type {([Object], Number, Number) -> DOMNode} */
-const renderActionsMenu = (actions, x, y) => {
-    let ref
-    const actionsMenuComponent = <ActionsMenu actions={actions} x={x} y={y} ref={node => { ref = node }}/>;
+/**
+ * @param {Object} store - Contains: `getState` func and `dispatch` func.
+ * @param {Object} payload - Data which changes state in some way.
+ * @returns {Object} - The new app state. Updates the `actionsMenuNode` property.
+ */
+export function closeActionsMenuReducer(store) {
+    // Should the `remove` call go here?
+    const node = store.getState().actionsMenuNode
+    document.getElementById(node.id).remove()
 
-    // TODO fix double rendering issue (occurs when right-click on two different rows)
-    render(actionsMenuComponent, document.getElementById('actions-menu-wrap'))
-    return ref
+    return { actionsMenuNode: null }
 }
 
-/** @type {(Object, Object, Object) -> Object} */
+/**
+ * @param {Object} store - Contains: `getState` func and `dispatch` func.
+ * @param {Object} payload - Data which changes state in some way.
+ * @returns {Object} - The new app state. Updates the `processes` property.
+ */
+export function renameProcessReducer(store, payload) {
+    const { newName, procIndex } = payload
+    let { processes } = store.getState()
+    processes[procIndex].name = newName
+
+    // Are we supposed to grab the object returned by this dispatch and attach it to
+    // our returned object? If we choose to do that, we will have to beconsistent and
+    // do that for _all_ dispatch calls inside a reducer. Could be bad for perf?
+    store.dispatch('CLOSE_ACTIONS_MENU', 'fuck')
+    return { processes }
+}
+
+/**
+ * Helper func. NOT a reducer.
+ * @see rightClickProcessReducer
+ * @param {[Object]} actions
+ * @param {[Object]} actions
+ * @param {[Object]} actions
+ * @returns {DOMNode}
+ */
+
+/** @type {(Object, Object) -> newState: Object} */
 export function rightClickProcessReducer(store, payload) {
     const { procObj, event, procIndex } = payload
     const state = store.getState()
-    // TODO fix bugs
+
+    // TODO Destory the previous ActionsMenu component node before rendering the new one.
+    // In actuality, this conditional just checks to see if the actions menu was _previously_ rendered.
+    // Maybe a reducer case is needed for setting state for this property back to `null`.
+    console.log('right clicked')
+    console.log('state.actionsMenuNode is:', state.actionsMenuNode)
+    if (state.actionsMenuNode) {
+        console.log('inside conditional')
+        // console.log('state.actionsMenuNode is:', state.actionsMenuNode)
+        store.dispatch('CLOSE_ACTIONS_MENU')()
+    }
 
     if (state.markedProcessesMap.size > 0 && !procObj.isMarked) {
         store.dispatch('UNMARK_PROCESSES', { indexes: [...state.markedProcessesMap.keys()] })
@@ -115,8 +179,12 @@ export function rightClickProcessReducer(store, payload) {
     store.dispatch('MARK_PROCESSES', { indexes: [ procIndex ] })
 
     const markedProcessesMap = new Map(state.markedProcessesMap).set(procIndex, procObj)
-    const procs = [...markedProcessesMap.values()]
+    const actions = getActions(markedProcessesMap, store.dispatch)
 
-    const actionsMenuNode = renderActionsMenu(getActions(procs), event.pageX, event.pageY)
-    return { markedProcessesMap }
+    const actionsMenu = <ActionsMenu store={store} actions={actions} x={event.pageX} y={event.pageY}/>
+
+    // TODO fix double rendering issue (occurs when right-click on two different rows)
+    const actionsMenuNode = render(actionsMenu, document.getElementById('actions-menu-wrap'))
+
+    return { markedProcessesMap, actionsMenuNode }
 }
