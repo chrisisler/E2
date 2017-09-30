@@ -7,7 +7,7 @@ import glamorous from 'glamorous/preact'
 const ActionsMenuWrap = glamorous.nav({
     position: 'absolute'
     , border: '1px solid #ccc'
-    , borderRadius: 3
+    , borderRadius: 4
     , backgroundColor: '#eee'
     , zIndex: 100
     , fontSize: 14
@@ -21,19 +21,19 @@ const ActionsList = glamorous.ul({
     , listStyleType: 'none'
     , margin: 0
     , padding: 0
-    , minWidth: 180
-    , maxWidth: 450
-    , maxHeight: 400
+    , minWidth: 192
+    , maxWidth: 512
+    , maxHeight: 480
 })
 
 const ActionItem = glamorous.li({
     clear: 'both'
     , textAlign: 'left'
-    , padding: '6px 20px'
+    , padding: '8px 24px'
     , textTransform: 'none'
     , cursor: 'pointer'
     , ':hover': {
-        backgroundColor: '#ddd'
+        backgroundColor: '#ccc'
     }
 })
 
@@ -45,7 +45,7 @@ export default class extends Component {
             // If there's a `getChildComponent` sub-prop in `this.props` then allow
             // users to click on it without closing the actions menu.
             if (!path.filter(x => x.classList).some(x => [...x.classList].includes('persist-on-click'))) {
-                this.props.store.dispatch({ type: 'CLOSE_ACTIONS_MENU' })
+                this.props.store.dispatch('CLOSE_ACTIONS_MENU')
                 document.removeEventListener('click', document)
             }
         })

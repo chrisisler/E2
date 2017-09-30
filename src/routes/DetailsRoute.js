@@ -7,9 +7,10 @@
 
 import { h } from 'preact'
 import glamorous from 'glamorous/preact'
-import { getDetailedProcessObj } from '../getProcesses'
+import { PROCESS_KEYS } from '../process-utils'
+// import { getDetailedProcessObj } from 'process-utils'
 
-const sortByMemory = procs => procs.sort((p1, p2) => p1.memory > p2.memory)
+// const sortByMemory = procs => procs.sort((p1, p2) => p1.memory > p2.memory)
 
 // fake data
 // const percentCPU = 0.0
@@ -20,12 +21,22 @@ const sortByMemory = procs => procs.sort((p1, p2) => p1.memory > p2.memory)
 // const user = 'litebox'
 // const status = 'S'
 
-const DetailsFlexWrap = glamorous.section({
-  display: 'flex'
-  , padding: '32px 28px'
-  , flexDirection: 'column'
+const DetailsWrap = glamorous.section({
+    display: 'flex'
+    , padding: '32px 64px'
+    , width: '100vw'
 })
 
-export default ({ store }) => (
-    <h1>details view</h1>
-)
+export default ({ store }) => {
+    const { processes, previousSortKey } = store.getState()
+
+    let procObj = (previousSortKey === PROCESS_KEYS.memory)
+        ? procObj = processes[0]
+        : processes.sort((p1, p2) => Number(p1.memory) > Number(p2.memory))[0] // NOT WORKING
+
+    return (
+        <DetailsWrap>
+            foo
+        </DetailsWrap>
+    )
+}

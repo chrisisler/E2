@@ -7,6 +7,16 @@
 import cp from 'child_process'
 import os from 'os'
 
+export const PROCESS_KEYS = {
+    name: 'name'
+    , pid: 'pid'
+    , memory: 'memory'
+
+    // Properties for  "detailed" processes, with more keys/info.
+    , percentCPU: 'percentCPU' 
+    // etc...
+}
+
 const makeProcessObjFromStr = s => {
     const [ pid, memory, name ] = s.split(' ')
     return { pid, memory, name }
@@ -64,4 +74,9 @@ const makeDetailedProcessObjFromStr = str => {
 export const getDetailedProcessObj = pid => {
     const commandOutputStr = cp.execSync(`ps -p ${pid} -cxo pid=,rss=,command=,%cpu=,%mem=,etime=,ppid=,user=,stat=`, { encoding: 'utf8' })
     return makeDetailedProcessObjFromStr(commandOutputStr)
+}
+
+// TODO
+export const killProcess = (pid) => {
+    console.log('not implemented')
 }

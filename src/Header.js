@@ -3,66 +3,65 @@ import { Link } from 'preact-router'
 import glamorous from 'glamorous/preact'
 import { css } from 'glamor'
 
-const headerHeight = 42
+export const headerHeight = 48
+
 const headerHeightCSS = { height: headerHeight }
 const HeaderWrap = glamorous.nav(headerHeightCSS, {
-  position: 'fixed'
-  , width: '100vw'
-  , top: 0
-  , padding: '4px 0 0 16px'
-  , backgroundColor: '#eee'
-  , boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.18)'
+    position: 'fixed'
+    , width: '100vw'
+    , top: 0
+    , padding: '8px 0 0 8px'
 })
 const HeaderLinksList = glamorous.ul(headerHeightCSS, {
-  display: 'flex' // flexin' it up
-  , alignItems: 'center'
-  , margin: '0 auto'
-  , overflow: 'hidden'
-  , maxWidth: 1800
-  , padding: 0
+    display: 'flex' // flexin' it up
+    , alignItems: 'center'
+    , margin: '0 auto'
+    , overflow: 'hidden'
+    , maxWidth: 1800
+    , padding: 0
 })
 const HeaderLink = glamorous.li(headerHeightCSS, {
-  listStyleType: 'none'
+    listStyleType: 'none'
 })
 const LinkCSS = css(headerHeightCSS, {
-  color: '#000'
-  , display: 'flex'
-  , position: 'relative'
-  , margin: '0 0 0 20px'
-  , flexDirection: 'column'
-  , justifyContent: 'center'
-  , textDecoration: 'none'
+    color: '#000'
+    , display: 'flex'
+    , position: 'relative'
+    , margin: '0 0 0 32px'
+    , flexDirection: 'column'
+    , justifyContent: 'center'
+    , textDecoration: 'none'
 })
 
 // TODO highlight the currently selected route
 const routeNameToLink = routeName => (
-  <HeaderLink>
-    <Link href={`/${routeName}`} {...LinkCSS}>
-      {routeName.toUpperCase()}
-    </Link>
-  </HeaderLink>
+    <HeaderLink>
+        <Link href={`/${routeName}`} {...LinkCSS}>
+            {routeName.toUpperCase()}
+        </Link>
+    </HeaderLink>
 )
 
 // TODO Put all route names into some shared js file in an array.
 export const Header = () => (
-  <HeaderWrap>
-    <HeaderLinksList>
-      {[ 'processes', 'settings', 'details' ].map(routeNameToLink)}
-    </HeaderLinksList>
-  </HeaderWrap>
+    <HeaderWrap>
+        <HeaderLinksList>
+            {[ 'processes', 'settings', 'details' ].map(routeNameToLink)}
+        </HeaderLinksList>
+    </HeaderWrap>
 )
 
 const RouteWrap = glamorous.div({
-  marginTop: headerHeight
-  , height: `calc(100vh - ${headerHeight}px)`
+    marginTop: headerHeight
+    , maxHeight: `calc(100vh - ${headerHeight}px)`
 })
 
 export const RouteWithHeader = ({ RouteComponent, ...props }) => (
-  <div>
-    <Header />
+    <div>
+        <Header />
 
-    <RouteWrap>
-      <RouteComponent {...props} />
-    </RouteWrap>
-  </div>
+        <RouteWrap>
+            <RouteComponent {...props} />
+        </RouteWrap>
+    </div>
 )

@@ -1,6 +1,6 @@
 import { h, render } from 'preact'
-import { killProcess } from './killProcess'
-import ActionsMenu from './ActionsMenu' // TODO For `rightClickProcessReducer`
+import { killProcess } from './process-utils'
+import ActionsMenu from './ActionsMenu'
 
 /**
  * For the "ProcessesRoute".
@@ -40,14 +40,14 @@ export function leftClickProcessReducer(store, payload) {
     if (!event.altKey && !event.shiftKey) {
         const indexes = [...markedProcessesMap.keys()]
         if (indexes.length > 0) {
-            store.dispatch({ type: 'UNMARK_PROCESSES', payload: { indexes } })
+            store.dispatch('UNMARK_PROCESSES', { indexes })
         }
-        store.dispatch({ type: 'MARK_PROCESSES', payload: { indexes: [ procIndex ] } })
+        store.dispatch('MARK_PROCESSES', { indexes: [ procIndex ] })
         markedProcessesMap = new Map().set(procIndex, procObj)
     }
     // If ALT + left-click, add the clicked process to the markedProcessesMap.
     else if (event.altKey) {
-        store.dispatch({ type: 'MARK_PROCESSES', payload: { indexes: [ procIndex ] } })
+        store.dispatch('MARK_PROCESSES', { indexes: [ procIndex ] })
         markedProcessesMap.set(procIndex, procObj)
     }
     // If SHIFT + left-click, todo
@@ -60,7 +60,7 @@ export function leftClickProcessReducer(store, payload) {
         const indexes = (lastIndex < procIndex)
             ? range(lastIndex, procIndex + 1) // need `+1` because procIndex is not yet marked.
             : range(procIndex, lastIndex)
-        store.dispatch({ type: 'MARK_PROCESSES', payload: { indexes } })
+        store.dispatch('MARK_PROCESSES', { indexes })
 
         indexes.forEach(index => {
             markedProcessesMap.set(index, store.processes[index])
@@ -83,6 +83,11 @@ const getActions = (markedProcessesMap, dispatch) => {
     let actions = []
 
     actions.push({
+        text: 'View details'
+        , effect: () => { console.log('view details - not implemented') }
+    })
+
+    actions.push({
         text: 'Kill highlighted processes'
         // TODO also need to update state, do the below instead.
         // , effect: () => { dispatch('KILL_PROCESSES', procs) }
@@ -99,7 +104,7 @@ const getActions = (markedProcessesMap, dispatch) => {
             onKeyDown={event => {
                 if (event.key === 'Enter') {
                     const newName = event.target.value
-                    dispatch({ type: 'RENAME_PROCESS', payload: { newName, procIndex } })
+                    dispatch('RENAME_PROCESS', { newName, procIndex })
                 }
             }}
         />
@@ -142,7 +147,7 @@ export function renameProcessReducer(store, payload) {
     // Are we supposed to grab the object returned by this dispatch and attach it to
     // our returned object? If we choose to do that, we will have to beconsistent and
     // do that for _all_ dispatch calls inside a reducer. Could be bad for perf?
-    store.dispatch({ type: 'CLOSE_ACTIONS_MENU' })
+    store.dispatch('CLOSE_ACTIONS_MENU')
     return { processes }
 }
 
@@ -152,13 +157,13 @@ export function rightClickProcessReducer(store, payload) {
     const state = store.getState()
 
     if (state.actionsMenuNode) {
-        store.dispatch({ type: 'CLOSE_ACTIONS_MENU' })
+        store.dispatch('CLOSE_ACTIONS_MENU')
     }
 
     if (state.markedProcessesMap.size > 0 && !procObj.isMarked) {
-        store.dispatch({ type: 'UNMARK_PROCESSES', payload: { indexes: [...state.markedProcessesMap.keys()] } })
+        store.dispatch('UNMARK_PROCESSES', { indexes: [...state.markedProcessesMap.keys()] })
     }
-    store.dispatch({ type: 'MARK_PROCESSES', payload: { indexes: [ procIndex ] } })
+    store.dispatch('MARK_PROCESSES', { indexes: [ procIndex ] })
 
     const markedProcessesMap = new Map(state.markedProcessesMap).set(procIndex, procObj)
     const actions = getActions(markedProcessesMap, store.dispatch)
@@ -168,18 +173,33 @@ export function rightClickProcessReducer(store, payload) {
     return { markedProcessesMap, actionsMenuNode }
 }
 
+/**
+ * @todo THIS IS NOT WORKING
+ * @param {Object} store - Contains: `getState` func and `dispatch` func.
+ * @param {Object} payload - Data which changes state in some way.
+ * @returns {Object} - The new app state.
+ */
 export function sortProcessesReducer(store, payload) {
-    const keyToSortBy = payload.key
-    let { doReverseSort, processes } = store.getState()
+    const sortKey = payload.key
+    let { doReverseSort, processes, previousSortKey } = store.getState()
 
-    processes = processes.sort((p1, p2) => {
-        // TODO Handle lower vs upper case for strings.
-    })
-
-    if (doReverseSort) {
-        processes = processes.reverse()
-        doReverseSort = !doReverseSort
+    // 
+    if (previousSortKey === sortKey) {
+        return { processes: processes.reverse() }
     }
 
-    return { processes, doReverseSort }
+    const toLower = s => ''.toLowerCase.call(s)
+    processes = processes.sort((p1, p2) => {
+        if (sortKey === 'name') {
+            return toLower(p1.name) < toLower(p2.name)
+        }
+        return Number(p1[sortKey]) < Number(p2[sortKey])
+    })
+
+    doReverseSort = !doReverseSort
+    if (doReverseSort) {
+        processes = processes.reverse()
+    }
+
+    return { processes, doReverseSort, previousSortKey }
 }
