@@ -14,6 +14,9 @@ const getInitialState = () => ({
     , actionsMenuNode: null
     , doReverseSort: false
     , previousSortKey: null
+
+    // `visibilityFilter` is either `null` or a function that takes a process object and returns a Boolean
+    , visibilityFilter: null
 })
 
 const App = DispatchComponent({
@@ -35,6 +38,9 @@ const App = DispatchComponent({
             case 'RENAME_PROCESS'     : return reducers.renameProcess(store, action.payload)
             case 'CLOSE_ACTIONS_MENU' : return reducers.closeActionsMenu(store)
             case 'SORT_PROCESSES'     : return reducers.sortProcesses(store, action.payload)
+            case 'KILL_PROCESSES'     : return reducers.killProcesses(store, action.payload)
+            case 'SEARCH_PROCESSES'   : return reducers.searchProcesses(store, action.payload)
+            case 'CLEAR_FILTER'       : return reducers.clearFilter()
             default: throw new Error(`Unsupported action type, ${action.type}`)
         }
     }

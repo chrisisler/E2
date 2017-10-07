@@ -7,6 +7,9 @@
 import cp from 'child_process'
 import os from 'os'
 
+/** @type {() -> Boolean} */
+// const isWindows = () => process.platform.startsWith('win')
+
 export const PROCESS_KEYS = {
     name: 'name'
     , pid: 'pid'
@@ -54,19 +57,16 @@ const makeDetailedProcessObjFromStr = str => {
 /**
  * %cpu: percantage cpu usage
  * %mem: percentage memory usage
- * rss: memory (?)
+ * rss: memory
  * etime: elapsed running time
  * ppid: parent process id
- *     - if this exists, use this pid value to show a button
- *     - which will display a full card (router view) of the
- *     - process with this id.
+ *     - If ppid exists, render button linking to Details view of that pid proc
  * user: who started this process
  * stat: if includes "S", then is display: `status: sleeping`
  *
  * Additional:
  * - How many processes of this name
- *     - if not singular process, display %cpu, %mem, and rss for
- *       the summated process.
+ *     - if not singular process, display %cpu, %mem, and rss for the summated process.
  *
  * @param {String} pid - The process ID of some process object.
  * @returns {Object} - An enhanced process object with more properties.
@@ -76,7 +76,19 @@ export const getDetailedProcessObj = pid => {
     return makeDetailedProcessObjFromStr(commandOutputStr)
 }
 
-// TODO
-export const killProcess = (pid) => {
-    console.log('not implemented')
-}
+/** @type {(String|Number, String) -> Promise} */
+/**
+ * @param {String|Number} pid - The process ID
+ * @param {String} signal
+ * @returns {Promise} - `then` arg is `true` is kill succeeded. `undefined`otherwise.
+ */
+export const killProcess = (pid, signal = 'SIGTERM') =>
+    Promise.resolve().then(() => {
+        try {
+            // https://nodejs.org/api/process.html#process_process_kill_pid_signal
+            return process.kill(pid, signal)
+        } catch (err) {
+            // ESRCH: No process or process group can be found corresponding to that specified by pid.
+            if (err.code !== 'ESRCH') throw err
+        }
+    })

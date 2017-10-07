@@ -51,7 +51,7 @@ const Header = () => (
 )
 
 const RouteWrap = glamorous.div({
-    marginTop: headerHeight
+    paddingTop: headerHeight
     , height: `calc(100vh - ${headerHeight}px)`
 })
 

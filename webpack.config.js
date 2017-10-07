@@ -3,7 +3,8 @@
 const path = require('path')
 
 module.exports = {
-    entry: './src/index.js'
+    // https://stackoverflow.com/questions/33527653/babel-6-regeneratorruntime-is-not-defined
+    entry: [ 'babel-polyfill', './src/index.js' ]
 
     , output: {
         path: path.join(__dirname, 'build')

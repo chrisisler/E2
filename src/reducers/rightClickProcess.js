@@ -6,9 +6,10 @@ import markProcesses from './markProcesses'
 
 /**
  * Helper func for `rightClickProcess`.
+ *
  * @see rightClickProcess
  * @param {Map} markedProcessesMap - Part of top-level app state.
- * @param {Function} dispatch - From the top-level (state-manager) `store`.
+ * @param {Function} dispatch - From the top-level (state-manager) `store` obj.
  * @returns {[Object]} actions
  */
 const getActions = (markedProcessesMap, dispatch) => {
@@ -16,17 +17,16 @@ const getActions = (markedProcessesMap, dispatch) => {
     let actions = []
 
     actions.push({
+        text: 'Cancel'
+    }, {
         text: 'View details'
-        , effect: () => { route('/details', true) }
-    })
-
-    actions.push({
-        text: 'Kill highlighted processes'
-        // , effect: () => { dispatch('KILL_PROCESSES', procs) } // TODO
+        , effect: () => { route('/details', true) } // Navigate to Details view
+    }, {
+        text: 'Kill highlighted process(es)'
+        , effect: () => { dispatch('KILL_PROCESSES', procs) }
     })
 
     if (procs.length === 1) {
-        // TODO async import here on a custom <Input /> component?
         const procIndex = [...markedProcessesMap.keys()][0]
         let inputNodeRef
         const RenameInput = <input
@@ -46,7 +46,6 @@ const getActions = (markedProcessesMap, dispatch) => {
             , doPersist: true // True = clicking here does NOT close actions menu.
         })
     }
-
     return actions
 }
 
@@ -88,4 +87,3 @@ export default function rightClickProcess(store, payload) {
         , actionsMenuNode
     }
 }
-

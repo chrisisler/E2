@@ -35,7 +35,7 @@ export default function leftClickProcess(store, payload) {
         processes = markProcesses(store, { indexes: [procIndex] }, true).processes
         markedProcessesMap.set(procIndex, procObj)
     }
-    // If SHIFT + left-click, todo
+    // If SHIFT + left-click 
     else if (event.shiftKey) {
         const lastIndex = last([...markedProcessesMap.keys()])
 
@@ -47,7 +47,7 @@ export default function leftClickProcess(store, payload) {
 
         // Update the Map to reflect the newly marked processes per `indexes`.
         indexes.forEach(index => {
-            markedProcessesMap.set(index, store.processes[index])
+            markedProcessesMap.set(index, processes[index])
         })
     }
     return { markedProcessesMap, processes }
