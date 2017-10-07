@@ -1,5 +1,5 @@
 import { h } from 'preact'
-import { Link } from 'preact-router'
+import { Link } from 'preact-router/match'
 import glamorous from 'glamorous/preact'
 import { css } from 'glamor'
 
@@ -33,7 +33,6 @@ const LinkCSS = css(headerHeightCSS, {
     , textDecoration: 'none'
 })
 
-// TODO highlight the currently selected route
 const routeNameToLink = routeName => (
     <HeaderLink>
         <Link href={`/${routeName}`} {...LinkCSS}>
@@ -42,8 +41,8 @@ const routeNameToLink = routeName => (
     </HeaderLink>
 )
 
-// TODO Put all route names into some shared js file in an array.
-export const Header = () => (
+// Maybe put all route names into some shared js file in an array.
+const Header = () => (
     <HeaderWrap>
         <HeaderLinksList>
             {[ 'processes', 'settings', 'details' ].map(routeNameToLink)}
@@ -53,7 +52,7 @@ export const Header = () => (
 
 const RouteWrap = glamorous.div({
     marginTop: headerHeight
-    , maxHeight: `calc(100vh - ${headerHeight}px)`
+    , height: `calc(100vh - ${headerHeight}px)`
 })
 
 export const RouteWithHeader = ({ RouteComponent, ...props }) => (

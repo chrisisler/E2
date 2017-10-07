@@ -10,6 +10,8 @@ A desktop app for analyzing and managing your running processes.
 - [Webpack-dev-server](https://github.com/webpack/webpack-dev-server)
 - [Glamorous](https://medium.com/@kentcdodds/introducing-glamorous-fb3c9f4ed20e)
 - [Yarn](https://github.com/yarnpkg/yarn)
+- [Babel](https://babeljs.io)
+- [ESLint](https://eslint.org)
 
 ```
 /**

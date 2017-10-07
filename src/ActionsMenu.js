@@ -1,7 +1,7 @@
-// TODO Add an action to view details of the right-clicked process.
-// - This would redirect to the Details view and show extra info.
+// TODO
+// - Add ability to "Copy"
 
-import { h, Component } from 'preact'
+import { h } from 'preact'
 import glamorous from 'glamorous/preact'
 
 const ActionsMenuWrap = glamorous.nav({
@@ -37,28 +37,30 @@ const ActionItem = glamorous.li({
     }
 })
 
-export default class extends Component {
-    id = 'actions-menu'
+const id = 'actions-menu'
+const persistClicksClass = 'persist-on-click'
 
-    componentDidMount() {
-        document.addEventListener('click', ({ path }) => {
-            // If there's a `getChildComponent` sub-prop in `this.props` then allow
-            // users to click on it without closing the actions menu.
-            if (!path.filter(x => x.classList).some(x => [...x.classList].includes('persist-on-click'))) {
-                this.props.store.dispatch('CLOSE_ACTIONS_MENU')
-                document.removeEventListener('click', document)
-            }
-        })
-    }
+function didMount(closeActionsMenu) {
+    document.addEventListener('click', ({ path }) => {
+        // If there's a `getChildComponent` sub-prop in `this.props` then allow
+        // users to click on it without closing the actions menu.
+        if (!path.filter(x => x.classList).some(x => [...x.classList].includes(persistClicksClass))) {
+            closeActionsMenu()
+            document.removeEventListener('click', document)
+        }
+    })
+}
 
-    render = ({ actions, x, y }) => (
-        <ActionsMenuWrap x={x} y={y} id={this.id}>
+export default ({ actions, x, y, closeActionsMenu }) => {
+    didMount(closeActionsMenu)
+    return (
+        <ActionsMenuWrap x={x} y={y} id={id}>
             <ActionsList>
-                {actions.map(({ text, effect, getChildComponent, persistOnClick }) => (
+                {actions.map(({ text, effect, getChildComponent, doPersist }) => (
                     <ActionItem
                         key={text}
                         onClick={() => { effect && effect() }}
-                        className={persistOnClick && 'persist-on-click'}
+                        className={doPersist && persistClicksClass}
                     >
                         {text}
                         {getChildComponent && getChildComponent()}
