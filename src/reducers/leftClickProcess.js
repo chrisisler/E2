@@ -10,13 +10,13 @@ const range = (start, end) => [...Array(end - start)].map((_, idx) => idx + star
  * - Ctrl + left-click a process to highlight multiple processes.
  * - Shift + left-click to highlight all processes between.
  *
- * @param {Object} store - Contains: `getState` func and `dispatch` func.
+ * @param {Object} store
  * @param {Object} payload - Data which changes state in some way.
  * @returns {Object} - The new app state.
  */
 export default function leftClickProcess(store, payload) {
     const { event, procObj, procIndex } = payload
-    let { markedProcessesMap, processes } = store.getState() // State to be updated.
+    let { markedProcessesMap, processes } = store.getState()
 
     // If no modifiers (left-click only) then mark the clicked process (and unhighlight the rest).
     if (!event.altKey && !event.shiftKey) {
@@ -24,7 +24,7 @@ export default function leftClickProcess(store, payload) {
         const indexes = [...markedProcessesMap.keys()]
         if (indexes.length > 0) {
             processes = markProcesses(store, { indexes }, false).processes
-            store = { ...store, processes }
+            // store = { ...store, processes }
         }
         // Mark the clicked process.
         processes = markProcesses(store, { indexes: [procIndex] }, true).processes

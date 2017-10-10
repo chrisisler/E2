@@ -28,6 +28,8 @@ module.exports = {
         ]
     }
 
+    , devtool: 'source-map'
+
     // server
     , devServer: {
         contentBase: path.join(__dirname, 'src')

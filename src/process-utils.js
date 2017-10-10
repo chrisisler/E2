@@ -54,6 +54,7 @@ const makeDetailedProcessObjFromStr = str => {
     const [ percentCPU, percentMemory, memory, runningTime, parentPID, user, status ] = str.split(' ')
     return { percentCPU, percentMemory, memory, runningTime, parentPID, user, status }
 }
+
 /**
  * %cpu: percantage cpu usage
  * %mem: percentage memory usage
@@ -76,19 +77,29 @@ export const getDetailedProcessObj = pid => {
     return makeDetailedProcessObjFromStr(commandOutputStr)
 }
 
-/** @type {(String|Number, String) -> Promise} */
 /**
+ * Maps a process id String|Number to a Promise (to kill that object).
+ *
  * @param {String|Number} pid - The process ID
- * @param {String} signal
- * @returns {Promise} - `then` arg is `true` is kill succeeded. `undefined`otherwise.
+ * @param {String|Number} signal - signal to send to the process obj with given `pid`.
+ * @returns {Promise<Boolean|Undefined>} - `then` arg is `true` if kill succeeded, `undefined` otherwise.
  */
 export const killProcess = (pid, signal = 'SIGTERM') =>
     Promise.resolve().then(() => {
         try {
             // https://nodejs.org/api/process.html#process_process_kill_pid_signal
+            /** @returns {Boolean|Undefined} - true if successfull kill, undefined otherwise. */
             return process.kill(pid, signal)
         } catch (err) {
-            // ESRCH: No process or process group can be found corresponding to that specified by pid.
-            if (err.code !== 'ESRCH') throw err
+            // if (err.code !== 'ESRCH') throw err // ESRCH: No process or process group can be found corresponding to that specified by pid.
+            throw err
         }
     })
+
+/**
+ * TODO
+ *
+ * @param {String|Number} memory
+ * @returns {String} - Memory as a percentage of total.
+ */
+export const asPercentage = memory => {}

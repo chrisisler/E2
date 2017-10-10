@@ -29,18 +29,25 @@ const ProcData = glamorous.p({
 
 const SearchInput = glamorous.input({
     padding: '8px 16px'
-    , margin: '0 0 8px 32px'
-    , minWidth: 256
+    , margin: '0 16px 8px 32px'
+    , minWidth: 232
     , fontSize: 14
     , border: 'none'
     , boxShadow: '0 2px 2px 0 rgba(0, 0, 0, 0.15)'
     , outline: 'none'
 })
 
-const SearchBar = ({ dispatch }) => (
+const SearchBar = ({ store }) => (
     <SearchInput placeholder='Search...' onKeyDown={event => {
-        if (event.key === 'Enter') {
-            dispatch('SEARCH_PROCESSES', { query: event.target.value })
+        const query = event.target.value
+        const pressedEnter = event.key === 'Enter'
+
+        // If user presses enter on an empty input field, remove the filter / show all processes
+        if (pressedEnter && query.length === 0 && store.getState().visibilityFilter != null) {
+            store.dispatch('CLEAR_FILTER')
+        }
+        if (pressedEnter) {
+            store.dispatch('SEARCH_PROCESSES', { query })
         }
     }} />
 )
@@ -53,11 +60,6 @@ const Heading = ({ dispatch }) => (
     </ProcRow>
 )
 
-const ClearFilterButton = glamorous.button({
-    padding: 16
-    , fontSize: 14
-})
-
 export default ({ store }) => {
     let { processes, visibilityFilter } = store.getState()
 
@@ -65,11 +67,16 @@ export default ({ store }) => {
         processes = processes.filter(visibilityFilter)
     }
 
+    // TODO clear search bar on clicking the "clear filter" button.
     return (
         <section>
+            <SearchBar store={store} />
+            {visibilityFilter
+                && <button onClick={() => store.dispatch('CLEAR_FILTER')}>Clear Filter</button>
+            }
 
-            <SearchBar dispatch={store.dispatch} />
-            { visibilityFilter && <ClearFilterButton onClick={() => store.dispatch('CLEAR_FILTER')}>Clear Filter</ClearFilterButton> }
+            <glamorous.Div border='1px solid black' height={50} width={50} onClick={() => { store.dispatch('GET_LATEST_PROCESSES') }}>Refresh</glamorous.Div>
+
             <Heading dispatch={store.dispatch} />
 
             <glamorous.Div overflow='scroll' height='80vh'>
@@ -87,7 +94,6 @@ export default ({ store }) => {
                     </ProcRow>
                 ))}
             </glamorous.Div>
-
         </section>
     )
 }

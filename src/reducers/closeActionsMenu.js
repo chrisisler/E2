@@ -1,9 +1,9 @@
 /**
  * Note: Modifies DOM outside of Preact.
  *
- * @param {Object} store - Contains: `getState` func and `dispatch` func.
+ * @param {Object} store
  * @param {Object} payload - Data which changes state in some way.
- * @returns {Object} - The new app state. Updates the `actionsMenuNode` property.
+ * @returns {Object|Undefined} - The new app state. Updates the `actionsMenuNode` property.
  */
 export default function closeActionsMenu(store) {
     const ref = store.getState().actionsMenuNode
@@ -13,7 +13,7 @@ export default function closeActionsMenu(store) {
 
         if (domNode) {
             domNode.remove()
+            return { actionsMenuNode: null }
         }
-        return { actionsMenuNode: null }
     }
 }
