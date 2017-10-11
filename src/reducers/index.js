@@ -8,6 +8,7 @@ export default {
     , killProcesses: require('./killProcesses').default
     , leftClickProcess: require('./leftClickProcess').default
     , markProcesses: require('./markProcesses').default
+    , refreshProcesses: require('./refreshProcesses').default
     , renameProcess: require('./renameProcess').default
     , rightClickProcess: require('./rightClickProcess').default
     , searchProcesses: require('./searchProcesses').default

@@ -1,6 +1,7 @@
 import { h } from 'preact'
 import glamorous from 'glamorous/preact'
 
+const grayBackground = { backgroundColor: '#f3f3f3' }
 const transitionCSS = { transition: 'background-color ease 300ms' }
 const ProcRow = glamorous.div(transitionCSS, {
     display: 'flex'
@@ -9,32 +10,40 @@ const ProcRow = glamorous.div(transitionCSS, {
 }, props => ({
     backgroundColor: props.isMarked && '#b2ebf2'
 }))
-const ProcData = glamorous.p({
+const ProcData = glamorous.p(transitionCSS, {
     padding: 8
     , margin: 0
     , display: 'inline'
     , width: '33.3%'
-
+    , cursor: 'pointer'
     // https://css-tricks.com/almanac/properties/t/text-overflow/
     , overflow: 'hidden'
     , whiteSpace: 'nowrap'
     , textOverflow: 'ellipsis'
 }, props => ({
-    ...transitionCSS
-    , ':hover': {
+    ':hover': {
         backgroundColor: props.isTitle && '#b2ebf2'
-        , cursor: 'pointer'
     }
 }))
 
-const SearchInput = glamorous.input({
-    padding: '8px 16px'
+const SearchInput = glamorous.input(grayBackground, {
+    padding: 8
     , margin: '0 16px 8px 32px'
-    , minWidth: 232
+    , minWidth: 200
     , fontSize: 14
     , border: 'none'
-    , boxShadow: '0 2px 2px 0 rgba(0, 0, 0, 0.15)'
     , outline: 'none'
+})
+
+const RefreshButton = glamorous.button(grayBackground, {
+    width: 'fit-content'
+    , padding: '8px 24px'
+    , margin: '0 24px'
+    , fontSize: 14
+    , border: 'none'
+    , outline: 'none'
+    , borderRadius: 3
+    , cursor: 'pointer'
 })
 
 const SearchBar = ({ store }) => (
@@ -53,7 +62,7 @@ const SearchBar = ({ store }) => (
 )
 
 const Heading = ({ dispatch }) => (
-    <ProcRow css={{ paddingBottom: 16, fontWeight: 600 }}>
+    <ProcRow css={{ padding: '16px 0', fontWeight: 600 }}>
         <ProcData isTitle onClick={() => dispatch('SORT_PROCESSES', { key: 'name' })}>NAME</ProcData>
         <ProcData isTitle onClick={() => dispatch('SORT_PROCESSES', { key: 'pid' })}>PID</ProcData>
         <ProcData isTitle onClick={() => dispatch('SORT_PROCESSES', { key: 'memory' })}>MEMORY</ProcData>
@@ -70,15 +79,16 @@ export default ({ store }) => {
     // TODO clear search bar on clicking the "clear filter" button.
     return (
         <section>
+
             <SearchBar store={store} />
             {visibilityFilter
                 && <button onClick={() => store.dispatch('CLEAR_FILTER')}>Clear Filter</button>
             }
-
-            <glamorous.Div border='1px solid black' height={50} width={50} onClick={() => { store.dispatch('GET_LATEST_PROCESSES') }}>Refresh</glamorous.Div>
+            <RefreshButton onClick={() => store.dispatch('REFRESH_PROCESSES')}>
+                Refresh
+            </RefreshButton>
 
             <Heading dispatch={store.dispatch} />
-
             <glamorous.Div overflow='scroll' height='80vh'>
                 {processes.map((procObj, procIndex) => (
                     <ProcRow

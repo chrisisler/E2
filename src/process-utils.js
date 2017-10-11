@@ -39,13 +39,28 @@ const _getProcesses = str => str
     .filter(Boolean)
     .map(makeProcessObjFromStr)
 
+const command = 'ps -axco pid=,rss=,command='
+const options = { encoding: 'utf8' }
 
 /**
  * This is the important export.
  * @returns {[Object]} processes - Retrieved synchronously.
  */
 export const getProcessesSync = () =>
-    _getProcesses(cp.execSync('ps -axco pid=,rss=,command=', { encoding: 'utf8' }))
+    _getProcesses(cp.execSync(command, options))
+
+/**
+ * @see getProcessesSync For the sync version.
+ * @returns {Promise<Array[Object]>} - Array of process objects retrieved asynchronously.
+ */
+export const getProcessesAsync = () =>
+    new Promise((resolve, reject) => {
+        /* eslint-disable no-unused-vars */
+        cp.exec(command, options, (err, stdout, stderr) => {
+            if (err) reject(err)
+            resolve(stdout)
+        })
+    }).then(processesCsv => _getProcesses(processesCsv))
 
 
 /** @type {String -> Object} */
@@ -73,7 +88,7 @@ const makeDetailedProcessObjFromStr = str => {
  * @returns {Object} - An enhanced process object with more properties.
  */
 export const getDetailedProcessObj = pid => {
-    const commandOutputStr = cp.execSync(`ps -p ${pid} -cxo pid=,rss=,command=,%cpu=,%mem=,etime=,ppid=,user=,stat=`, { encoding: 'utf8' })
+    const commandOutputStr = cp.execSync(`ps -p ${pid} -cxo pid=,rss=,command=,%cpu=,%mem=,etime=,ppid=,user=,stat=`)
     return makeDetailedProcessObjFromStr(commandOutputStr)
 }
 

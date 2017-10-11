@@ -30,17 +30,20 @@ const getInitialState = () => ({
 
 const App = DispatchComponent({
     render: store => {
-        return <Router>
-            <RouteWithHeader path='/' default RouteComponent={ProcessesRoute} store={store} />
-            <RouteWithHeader path='/details' RouteComponent={DetailsRoute} store={store} />
-            <RouteWithHeader path='/settings' RouteComponent={SettingsRoute} />
-        </Router>
+        return (
+            <Router>
+                <RouteWithHeader path='/' default RouteComponent={ProcessesRoute} store={store} />
+                <RouteWithHeader path='/details' RouteComponent={DetailsRoute} store={store} />
+                <RouteWithHeader path='/settings' RouteComponent={SettingsRoute} />
+            </Router>
+        )
     },
     reducer: (action, store) => {
         /* eslint-disable indent */
         switch (action.type) {
-            case 'CONSTRUCTOR'        : return getInitialState()
+            case 'CONSTRUCTOR': return getInitialState()
 
+            // synchronous actions
             case 'MARK_PROCESSES'     : return reducers.markProcesses(store, action.payload, true)
             case 'UNMARK_PROCESSES'   : return reducers.markProcesses(store, action.payload, false)
             case 'LEFT_CLICK_PROCESS' : return reducers.leftClickProcess(store, action.payload)
@@ -57,7 +60,9 @@ const App = DispatchComponent({
             case 'KILL_PROCESSES':
                 reducers.killProcesses(store, action.payload)
                 break
-
+            case 'REFRESH_PROCESSES':
+                reducers.refreshProcesses(store)
+                break
             default:
                 throw new Error(`Unhandled action type: ${action.type}`)
         }

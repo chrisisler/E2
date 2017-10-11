@@ -1,32 +1,35 @@
 import { h, Component } from 'preact'
 import glamorous from 'glamorous/preact'
 
+// Used to create props for this component
 export const notificationTypes = {
     ERROR: 'ERROR'
     , SUCCESS: 'SUCCESS'
 }
 
-// TODO Use hex colors.
+// Maps notificationType to backgroundColor.
 // TODO Wire up to config
 const typeToColor = {
-    ERROR: 'red'
-    , SUCCESS: 'green'
+    ERROR: '#ff420e' // red
+    , SUCCESS: '#3c9a64' // green
 }
 
-const NotificationWrap = glamorous.div({
-    bottom: 36
-    , margin: '0 auto'
-    , position: 'fixed'
-    , cursor: 'pointer'
+const NotificationItem = glamorous.li({
+    listStyleType: 'none'
+    , margin: '8px auto'
+    , padding: 8
+    , borderRadius: 3
+    , width: '90%'
+    , maxWidth: 640
     , textAlign: 'center'
-    , width: '90vw'
-    , maxWidth: 512
-    , minHeight: 56
-    , fontSize: 14
-    , boxShadow: '0 2p 2px 0 rgba(0,0,0,0.2)'
 }, props => ({
     backgroundColor: typeToColor[props.type]
 }))
+
+const getUniqId = (() => {
+    let id = 1
+    return () => id++
+})()
 
 export default class extends Component
 {
@@ -35,14 +38,14 @@ export default class extends Component
         if (domNode) domNode.remove()
     }
 
-    componentDidMount() {
-        console.log('this.closeMe is:', this.closeMe)
-        setTimeout(this.closeMe, 6000)
+    componentDidMount = () => {
+        setTimeout(() => { this.closeMe() }, this.props.displayTime || 6000)
     }
 
+    // `type` determines backgroundColor, check the css.
     render = ({ message, type }) => (
-        <NotificationWrap type={type} ref={node => { this.selfNode = node }} onClick={this.closeMe}>
-            <glamorous.P margin='0 auto'>{message}</glamorous.P>
-        </NotificationWrap>
+        <NotificationItem type={type} innerRef={node => { this.selfNode = node }} onClick={this.closeMe} id={`notification-${getUniqId()}`}>
+            {message}
+        </NotificationItem>
     )
 }

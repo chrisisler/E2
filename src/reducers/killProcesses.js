@@ -32,14 +32,14 @@ export default function killProcesses(store, payload) {
                 freedMemory += Number(memory)
                 processes.splice(value.procIndex, 1)
 
-                message = `Killed ${name} (freeing ${memory} [${asPercentage(memory)}])` 
+                message = `Killed "${name}" process, freeing ${memory} [${asPercentage(memory)}] memory!` 
                 store.dispatch('SHOW_NOTIFICATION', { message, type: SUCCESS })
             })
 
             store.dispatch('UPDATE_PROCESSES', { processes })
 
             if (resolved.length > 1) {
-                message = `Killed ${resolved.length} processes. Freed up ${freedMemory} memory!` 
+                message = `Killed ${resolved.length} processes, freeing ${freedMemory} memory!` 
                 store.dispatch('SHOW_NOTIFICATION', { message, type: SUCCESS })
             }
         }
