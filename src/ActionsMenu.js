@@ -7,7 +7,7 @@ import glamorous from 'glamorous/preact'
 const ActionsMenuWrap = glamorous.nav({
     position: 'absolute'
     , border: '1px solid #ccc'
-    , borderRadius: 4
+    , borderRadius: 3
     , backgroundColor: '#eee'
     , zIndex: 100
     , fontSize: 14

@@ -13,11 +13,11 @@ A desktop app for analyzing and managing your running processes.
 - [Babel](https://babeljs.io)
 - [ESLint](https://eslint.org)
 
-### Roadmap
+### Potential Improvements
 
-- New batch of processes
+- persist renames in state.
+  - upon refresh, do the renames again.
 - sorting correctly
-- notification css
 - dark/light themes in config view
   - make em persist locally
 

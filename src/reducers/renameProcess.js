@@ -13,5 +13,10 @@ export default function renameProcess(store, payload) {
     // closes the actions menu
     const { actionsMenuNode } = closeActionsMenu(store)
 
-    return { processes, actionsMenuNode }
+    // TODO implement a history of renames. persisting renames across "Refresh" actions.
+    return { processes, actionsMenuNode,  }
 }
+// oldname
+// newname
+// index
+// pid

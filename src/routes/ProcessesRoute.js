@@ -1,5 +1,6 @@
-import { h } from 'preact'
+import { h, render } from 'preact'
 import glamorous from 'glamorous/preact'
+import HoverBox from '../HoverBox' // for hover info
 
 const grayBackground = { backgroundColor: '#f3f3f3' }
 const transitionCSS = { transition: 'background-color ease 300ms' }
@@ -69,6 +70,52 @@ const Heading = ({ dispatch }) => (
     </ProcRow>
 )
 
+// TODO: add hover menu
+function makeProcessObjectView(store, procObj, procIndex) {
+    let timeoutId, refNode
+
+    function mouseEnter() {
+        // keep track of mouse movement for rendering the hoverbox if users mouse stays there.
+        let x, y
+        document.addEventListener('mousemove', ({ pageX: mouseX, pageY: mouseY }) => {
+            x = mouseX
+            y = mouseY
+        })
+
+        // fixme syntax
+        timeoutId = setTimeout(() => {
+            // don't render more than one hoverbox
+            if (timeoutId) {
+                refNode = render(<HoverBox x={x} y={y} />, document.body)
+            }
+        }, 2000)
+    }
+
+    function mouseLeave(event) {
+        clearTimeout(timeoutId)
+
+        // do not remove from dom if hovering the hoverbox
+        if (refNode) {
+            document.getElementById(refNode.id).remove()
+        }
+    }
+
+    return (
+        <ProcRow
+            key={procObj.pid}
+            isMarked={procObj.isMarked}
+            onClick={event => store.dispatch('LEFT_CLICK_PROCESS', { event, procObj, procIndex })}
+            onContextMenu={event => store.dispatch('RIGHT_CLICK_PROCESS', { event, procObj, procIndex })}
+            onMouseEnter={mouseEnter}
+            onMouseLeave={mouseLeave}
+        >
+            <ProcData title={procObj.name}>{procObj.name}</ProcData>
+            <ProcData>{procObj.pid}</ProcData>
+            <ProcData>{procObj.memory}</ProcData>
+        </ProcRow>
+    )
+}
+
 export default ({ store }) => {
     let { processes, visibilityFilter } = store.getState()
 
@@ -76,10 +123,8 @@ export default ({ store }) => {
         processes = processes.filter(visibilityFilter)
     }
 
-    // TODO clear search bar on clicking the "clear filter" button.
     return (
         <section>
-
             <SearchBar store={store} />
             {visibilityFilter
                 && <button onClick={() => store.dispatch('CLEAR_FILTER')}>Clear Filter</button>
@@ -87,22 +132,9 @@ export default ({ store }) => {
             <RefreshButton onClick={() => store.dispatch('REFRESH_PROCESSES')}>
                 Refresh
             </RefreshButton>
-
             <Heading dispatch={store.dispatch} />
             <glamorous.Div overflow='scroll' height='80vh'>
-                {processes.map((procObj, procIndex) => (
-                    <ProcRow
-                        key={procObj.pid}
-                        title={procObj.name}
-                        isMarked={procObj.isMarked}
-                        onClick={event => store.dispatch('LEFT_CLICK_PROCESS', { event, procObj, procIndex })}
-                        onContextMenu={event => store.dispatch('RIGHT_CLICK_PROCESS', { event, procObj, procIndex })}
-                    >
-                        <ProcData>{procObj.name}</ProcData>
-                        <ProcData>{procObj.pid}</ProcData>
-                        <ProcData>{procObj.memory}</ProcData>
-                    </ProcRow>
-                ))}
+                {processes.map((procObj, procIndex) => makeProcessObjectView(store, procObj, procIndex))}
             </glamorous.Div>
         </section>
     )
