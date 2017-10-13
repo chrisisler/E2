@@ -41,10 +41,10 @@ const id = 'actions-menu'
 const persistClicksClass = 'persist-on-click'
 
 function didMount(closeActionsMenu) {
-    document.addEventListener('click', ({ path }) => {
+    document.addEventListener('click', (e) => {
         // If there's a `getChildComponent` sub-prop in `this.props` then allow
         // users to click on it without closing the actions menu.
-        if (!path.filter(x => x.classList).some(x => [...x.classList].includes(persistClicksClass))) {
+        if (!e.path.filter(x => x.classList).some(x => [...x.classList].includes(persistClicksClass))) {
             closeActionsMenu()
             document.removeEventListener('click', document)
         }

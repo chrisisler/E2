@@ -1,6 +1,6 @@
 # ErxiDesk 2
 
-A desktop app for analyzing and managing your running processes.
+E2 allows you to easily manage and gain insight into the processes running on your computer.
 
 ### Uses
 - [Preact](https://github.com/developit/preact)
@@ -17,7 +17,6 @@ A desktop app for analyzing and managing your running processes.
 
 - persist renames in state.
   - upon refresh, do the renames again.
-- sorting correctly
 - dark/light themes in config view
   - make em persist locally
 

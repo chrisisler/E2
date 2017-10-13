@@ -17,7 +17,10 @@ export default function sortProcesses(store, payload) {
     processes = processes.sort((p1, p2) => {
         // TODO sorting by name does not work
         if (sortKey === 'name') {
-            return toLower(p1.name) < toLower(p2.name)
+            const a = toLower(p1.name)
+            const b = toLower(p2.name)
+            return a < b ? -1 : a > b ? 1 : 0
+            // return toLower(p1.name) < toLower(p2.name)
         }
         return Number(p1[sortKey]) - Number(p2[sortKey])
     })

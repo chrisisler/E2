@@ -47,20 +47,21 @@ const RefreshButton = glamorous.button(grayBackground, {
     , cursor: 'pointer'
 })
 
-const SearchBar = ({ store }) => (
-    <SearchInput placeholder='Search...' onKeyDown={event => {
+const SearchBar = ({ store }) => {
+    return <SearchInput placeholder='Search...' onKeyDown={keyDown} />
+    function keyDown(event) {
+        const didPressEnterKey = event.key === 'Enter'
         const query = event.target.value
-        const pressedEnter = event.key === 'Enter'
 
         // If user presses enter on an empty input field, remove the filter / show all processes
-        if (pressedEnter && query.length === 0 && store.getState().visibilityFilter != null) {
+        if (didPressEnterKey && query.length === 0 && store.getState().visibilityFilter != null) {
             store.dispatch('CLEAR_FILTER')
         }
-        if (pressedEnter) {
+        if (didPressEnterKey) {
             store.dispatch('SEARCH_PROCESSES', { query })
         }
-    }} />
-)
+    }
+}
 
 const Heading = ({ dispatch }) => (
     <ProcRow css={{ padding: '16px 0', fontWeight: 600 }}>
@@ -72,21 +73,21 @@ const Heading = ({ dispatch }) => (
 
 // TODO: add hover menu
 function makeProcessObjectView(store, procObj, procIndex) {
-    let timeoutId, refNode
+    let timeoutId, hoverBoxRefNode
 
     function mouseEnter() {
         // keep track of mouse movement for rendering the hoverbox if users mouse stays there.
         let x, y
-        document.addEventListener('mousemove', ({ pageX: mouseX, pageY: mouseY }) => {
-            x = mouseX
-            y = mouseY
+        document.addEventListener('mousemove', ({ pageX, pageY }) => {
+            x = pageX
+            y = pageY
         })
 
         // fixme syntax
         timeoutId = setTimeout(() => {
             // don't render more than one hoverbox
             if (timeoutId) {
-                refNode = render(<HoverBox x={x} y={y} />, document.body)
+                hoverBoxRefNode = render(<HoverBox x={x} y={y} />, document.body)
             }
         }, 2000)
     }
@@ -94,9 +95,14 @@ function makeProcessObjectView(store, procObj, procIndex) {
     function mouseLeave(event) {
         clearTimeout(timeoutId)
 
-        // do not remove from dom if hovering the hoverbox
-        if (refNode) {
-            document.getElementById(refNode.id).remove()
+        // do not unmount hoverbox from dom if hovering the hoverbox
+        if (hoverBoxRefNode) {
+            if (event.toElement.id !== hoverBoxRefNode.id) {
+                const domNode = document.getElementById(hoverBoxRefNode.id)
+                if (domNode) {
+                    domNode.remove()
+                }
+            }
         }
     }
 
