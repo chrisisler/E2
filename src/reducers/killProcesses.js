@@ -47,7 +47,6 @@ export default function killProcesses(store, payload) {
             // get list of names of process objects that couldn't be killed
             const resolvedNames = resolved.map(r => r.value.procObj.name)
             const rejectedNames = indexObjectPairs.map(([_, p]) => p.name).filter(n => !resolvedNames.includes(n))
-            console.log('rejectedNames is:', rejectedNames)
 
             rejectedNames.forEach(name => {
                 message = `Could not kill "${name}"` 
