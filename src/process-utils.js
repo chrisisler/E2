@@ -104,7 +104,7 @@ export const killProcess = (pid, signal = 'SIGTERM') =>
         try {
             // https://nodejs.org/api/process.html#process_process_kill_pid_signal
             /** @returns {Boolean|Undefined} - true if successfull kill, undefined otherwise. */
-            return process.kill(pid, signal)
+            return process.kill(Number(pid), signal)
         } catch (err) {
             // if (err.code !== 'ESRCH') throw err // ESRCH: No process or process group can be found corresponding to that specified by pid.
             throw err

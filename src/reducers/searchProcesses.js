@@ -16,9 +16,11 @@ export default function searchProcesses(store, payload) {
     if (query.length < 1) return
 
     const queryIsString = isNaN(query)
+
+    /** @function visibilityFilter @type {(process: Object) -> Boolean} */
     const visibilityFilter = (queryIsString === true)
-        ? (process) => process.name.toLowerCase().includes(query.toLowerCase())
-        : (process) => String(process.pid).includes(query) /* Searching for process ID */
+        ? (process) => process.name.toLowerCase().includes(query.toLowerCase()) // searching for process name
+        : (process) => String(process.pid).includes(query) // searching for process ID
 
     return { visibilityFilter }
 }

@@ -9,30 +9,29 @@ const { ERROR, SUCCESS } = notificationTypes
  * @returns {Promise} - A promise containing properties of the new state.
  */
 export default function killProcesses(store, payload) {
-    // An array of [Number, Object] paris.
+    // An array of [Number, Object] pairs.
     const indexObjectPairs = [...payload.mapOfMarkedProcessesToKill.entries()]
     let { processes } = store.getState()
 
     // Couple each promise with the object kill and its index
-    const promises = indexObjectPairs.map(([ procIndex, procObj ]) => {
-        return killProcess(procObj.pid)
-            .then(didKill => ({ didKill, procObj, procIndex }))
-    })
+    const promises = indexObjectPairs.map(([ procIndex, procObj ]) =>
+        killProcess(procObj.pid)
+            .then(didKill => ({ didKill, procObj, procIndex })))
 
     allSettled(promises).then(settledPromises => {
         const { resolved, rejected } = splitByState(settledPromises)
         let message
 
         if (resolved.length !== 0) {
-            let freedMemory = 0
+            let freedMemory = 0 // summed `memory` property of all procs killed
 
-            resolved.forEach(({ value }) => {
-                const { memory, name } = value.procObj
+            resolved.forEach(resolvedPromise => {
+                const { memory, name } = resolvedPromise.value.procObj
 
                 freedMemory += Number(memory)
-                processes.splice(value.procIndex, 1)
+                processes.splice(resolvedPromise.value.procIndex, 1) // mutate in place!
 
-                message = `Killed "${name}" process, freeing ${memory} [${asPercentage(memory)}] memory!` 
+                message = `Killed "${name}", freeing ${memory} [${asPercentage(memory)}] memory!` 
                 store.dispatch('SHOW_NOTIFICATION', { message, type: SUCCESS })
             })
 
@@ -43,9 +42,15 @@ export default function killProcesses(store, payload) {
                 store.dispatch('SHOW_NOTIFICATION', { message, type: SUCCESS })
             }
         }
+
         if (rejected.length !== 0) {
-            rejected.forEach(({ value }) => {
-                message = `Could not kill ${value.procObj.name}` 
+            // get list of names of process objects that couldn't be killed
+            const resolvedNames = resolved.map(r => r.value.procObj.name)
+            const rejectedNames = indexObjectPairs.map(([_, p]) => p.name).filter(n => !resolvedNames.includes(n))
+            console.log('rejectedNames is:', rejectedNames)
+
+            rejectedNames.forEach(name => {
+                message = `Could not kill "${name}"` 
                 store.dispatch('SHOW_NOTIFICATION', { message, type: ERROR })
             })
 
@@ -63,6 +68,7 @@ export default function killProcesses(store, payload) {
  * or a sufficient `allSettled` function where promise objects
  * have an additional `state` property (or similar).
  * 
+ * @see allSettled
  * @param {[Promise]} promises
  * @returns {Object} - { resolved: [Promise], rejected: [Promise] }
  */
@@ -84,12 +90,12 @@ function splitByState(promises) {
  * would stop waiting at the first rejected promise. The promise returned by
  * `allSettled` will never be rejected.
  *
- * For every promise:
- *   1) Wait for all promises to become fulfilled or rejected, in parallel.
- *   2) Wrap a "fulfilled" or "rejected" `state` property around the value/error.
+ * Wait for all promises to become fulfilled or rejected, in parallel.
+ * Per promise, add a "fulfilled" or "rejected" `state` prop.
  *
  * @see "https://github.com/robhicks/es2015-Promise.allSettled/blob/master/index.js"
  * @see "https://github.com/kriskowal/q/blob/master/q.js#L1704-L1721"
+ * @see splitByState
  *
  * @param {[Promise]} promises - An array of promises.
  * @returns {Promise}
@@ -99,4 +105,3 @@ const allSettled = promises =>
         .then(value => ({ state: 'fulfilled', value }))
         .catch(reason => ({ state: 'rejected', reason }))
     ))
-

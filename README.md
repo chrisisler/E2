@@ -4,6 +4,8 @@ E2 allows you to easily manage and gain insight into the processes running on yo
 
 ### Needed Features
 
+- searching then killing does not work because...
+  - the unfiltered process gets highlighted/marked.
 - Notification CSS
 - Support Windows
 - Installation

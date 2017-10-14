@@ -40,7 +40,7 @@ export default class extends Component
     }
 
     componentDidMount() {
-        setTimeout(this.closeMe, this.props.displayTime || 6000)
+        setTimeout(this.closeMe, this.props.displayTime || 4000)
     }
 
     // `type` determines backgroundColor
