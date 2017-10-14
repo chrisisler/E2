@@ -87,7 +87,8 @@ function makeProcessObjectView(store, procObj, procIndex) {
         timeoutId = setTimeout(() => {
             // don't render more than one hoverbox
             if (timeoutId) {
-                hoverBoxRefNode = render(<HoverBox x={x} y={y} />, document.body)
+                // wip
+                // hoverBoxRefNode = render(<HoverBox x={x} y={y} />, document.body)
             }
         }, 2000)
     }
@@ -110,7 +111,7 @@ function makeProcessObjectView(store, procObj, procIndex) {
         <ProcRow
             key={procObj.pid}
             isMarked={procObj.isMarked}
-            onClick={event => store.dispatch('LEFT_CLICK_PROCESS', { event, procObj, procIndex })}
+            onClick={event => store.dispatch('LEFT_CLICK_PROCESS', { event, procIndex })}
             onContextMenu={event => store.dispatch('RIGHT_CLICK_PROCESS', { event, procObj, procIndex })}
             onMouseEnter={mouseEnter}
             onMouseLeave={mouseLeave}

@@ -1,5 +1,8 @@
 /** @type {(String) -> String} */
-const toLower = s => ''.toLowerCase.call(s)
+const toLower = s => String.prototype.toLowerCase.call(s)
+
+/** @type {[Any] -> [Any]} */
+const copyArray = array => Array.prototype.slice.call(array, 0)
 
 /**
  * @param {Object} store
@@ -9,20 +12,24 @@ const toLower = s => ''.toLowerCase.call(s)
 export default function sortProcesses(store, payload) {
     const sortKey = payload.key
     let { doReverseSort, processes, previousSortKey } = store.getState()
+    processes = copyArray(processes)
 
     if (previousSortKey === sortKey) {
         return { processes: processes.reverse() }
     }
 
-    processes = processes.sort((p1, p2) => {
-        // TODO sorting by name does not work
+    processes = processes.sort((proc1, proc2) => {
         if (sortKey === 'name') {
-            const a = toLower(p1.name)
-            const b = toLower(p2.name)
-            return a < b ? -1 : a > b ? 1 : 0
-            // return toLower(p1.name) < toLower(p2.name)
+            const a = toLower(proc1.name)
+            const b = toLower(proc2.name)
+            // https://github.com/ramda/ramda/blob/master/source/sortBy.js
+            return a < b
+                ? true
+                : a > b
+                    ? true
+                    : false
         }
-        return Number(p1[sortKey]) - Number(p2[sortKey])
+        return Number(proc2[sortKey]) - Number(proc2[sortKey])
     })
 
     doReverseSort = !doReverseSort

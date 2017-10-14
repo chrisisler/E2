@@ -2,23 +2,19 @@
 
 E2 allows you to easily manage and gain insight into the processes running on your computer.
 
-### Uses
-- [Preact](https://github.com/developit/preact)
-- [Preact-router](https://github.com/developit/preact-router)
-- [Electron](https://github.com/electron/electron)
-- [Webpack](https://github.com/webpack/webpack)
-- [Webpack-dev-server](https://github.com/webpack/webpack-dev-server)
-- [Glamorous](https://medium.com/@kentcdodds/introducing-glamorous-fb3c9f4ed20e)
-- [Yarn](https://github.com/yarnpkg/yarn)
-- [Babel](https://babeljs.io)
-- [ESLint](https://eslint.org)
+### Needed Features
 
-### Potential Improvements
-
-- persist renames in state.
-  - upon refresh, do the renames again.
+- Notification CSS
+- Support Windows
+- Installation
 - dark/light themes in config view
   - make em persist locally
+
+### Wanted Features
+
+- separate un/marking processes
+- persist renames in state.
+  - upon refresh, do the renames again.
 
 ```
 /**
@@ -38,3 +34,14 @@ E2 allows you to easily manage and gain insight into the processes running on yo
  * - Up arrow icon, on click: scroll to top.
  */
 ```
+
+### Technology Used
+- [Preact](https://github.com/developit/preact)
+- [Preact-router](https://github.com/developit/preact-router)
+- [Electron](https://github.com/electron/electron)
+- [Webpack](https://github.com/webpack/webpack)
+- [Webpack-dev-server](https://github.com/webpack/webpack-dev-server)
+- [Glamorous](https://medium.com/@kentcdodds/introducing-glamorous-fb3c9f4ed20e)
+- [Yarn](https://github.com/yarnpkg/yarn)
+- [Babel](https://babeljs.io)
+- [ESLint](https://eslint.org)

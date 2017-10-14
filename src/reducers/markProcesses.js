@@ -13,9 +13,20 @@
  * @returns {Object} - The new state.
  */
 export default function markProcesses(store, payload, doMarkProcess) {
-    let { processes } = store.getState()
-    payload.indexes.forEach(index => {
-        processes[index].isMarked = doMarkProcess
-    })
-    return { processes }
+    const indexesToChange = payload.indexes
+    let { processes, markedProcessesMap } = store.getState()
+
+    if (doMarkProcess) {
+        indexesToChange.forEach(index => {
+            processes[index].isMarked = true
+            markedProcessesMap.set(index, processes[index]) // add the mark
+        })
+    } else {
+        indexesToChange.forEach(index => {
+            processes[index].isMarked = false
+            markedProcessesMap.delete(index) // remove the mark
+        })
+    }
+
+    return { processes, markedProcessesMap }
 }
