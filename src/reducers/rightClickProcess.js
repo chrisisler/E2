@@ -2,6 +2,7 @@ import { h, render } from 'preact'
 import { route } from 'preact-router'
 import ActionsMenu from '../ActionsMenu'
 import markProcesses from './markProcesses'
+import unmarkProcesses from './unmarkProcesses'
 import { updateStore, keysFrom } from '../shared'
 
 export default function rightClickProcess(store, payload) {
@@ -17,11 +18,11 @@ export default function rightClickProcess(store, payload) {
     // un-mark the previously marked processes
     if (prevState.markedProcessesMap.size > 0 && !procObj.isMarked) {
         const indexes = keysFrom(prevState.markedProcessesMap)
-        store = updateStore(store, markProcesses(store, { indexes }, false))
+        store = updateStore(store, unmarkProcesses(store, { indexes }))
     }
 
     // mark the clicked processes
-    const updatedState = markProcesses(store, { indexes: [procIndexToMark] }, true)
+    const updatedState = markProcesses(store, { indexes: [procIndexToMark] })
     store = updateStore(store, updatedState)
 
     // prepare props for the actions menu
@@ -64,7 +65,7 @@ function _getActions(store, mapOfMarkedProcessesToKill) {
 
     // if only one proc is marked, add the ability to rename it
     if (!multipleProcessesAreMarked) {
-        // retrieve the first <Number, Object> pair out of the map
+        // retrieve the first <Number, Object> pair out of the map (ES6+ ftw!)
         const [ [ procIndex, proc ] ] = markedProcessesMap.entries()
         actions.push(_getRenameAction(store, proc.name, procIndex))
     }

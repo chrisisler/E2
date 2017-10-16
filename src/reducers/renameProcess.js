@@ -14,6 +14,7 @@ export default function renameProcess(store, payload) {
     const { actionsMenuNode } = closeActionsMenu(store)
 
     // TODO implement a history of renames. persisting renames across "Refresh" actions.
+    // - Is keeping a history of renames something that we want/need?
     return { processes, actionsMenuNode,  }
 }
 // oldname

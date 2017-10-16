@@ -1,4 +1,4 @@
-import { killProcess, asPercentage } from '../process-utils'
+import { killProcess, getMemoryPercent } from '../process-utils'
 import { notificationTypes } from '../Notification'
 const { ERROR, SUCCESS } = notificationTypes
 
@@ -26,12 +26,12 @@ export default function killProcesses(store, payload) {
             let freedMemory = 0 // summed `memory` property of all procs killed
 
             resolved.forEach(resolvedPromise => {
-                const { memory, name } = resolvedPromise.value.procObj
+                const { memory, pid, name } = resolvedPromise.value.procObj
 
                 freedMemory += Number(memory)
                 processes.splice(resolvedPromise.value.procIndex, 1) // mutate in place!
 
-                message = `Killed "${name}", freeing ${memory} [${asPercentage(memory)}] memory!` 
+                message = `Killed "${name}", freeing ${memory} [${getMemoryPercent(pid)}] memory!` 
                 store.dispatch('SHOW_NOTIFICATION', { message, type: SUCCESS })
             })
 

@@ -8,14 +8,10 @@ const { SUCCESS } = notificationTypes
  * @param {Object} store
  */
 export default function refreshProcesses(store) {
-    getProcessesAsync().then(processes => {
-        store.dispatch('UPDATE_PROCESSES', { processes })
-
-        const payload = {
-            type: SUCCESS
-            , message: 'Refreshed processes.'
-            , displayTime: 2000
-        }
-        store.dispatch('SHOW_NOTIFICATION', payload)
-    })
+    getProcessesAsync()
+        .then(processes => {
+            store.dispatch('UPDATE_PROCESSES', { processes })
+            store.dispatch('CLEAR_FILTER')
+            store.dispatch('SHOW_NOTIFICATION', { type: SUCCESS, message: 'Refreshed.', timer: 2000 })
+        })
 }

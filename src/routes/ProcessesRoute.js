@@ -83,7 +83,6 @@ function makeProcessObjectView(store, procObj, procIndex) {
             y = pageY
         })
 
-        // fixme syntax
         timeoutId = setTimeout(() => {
             // don't render more than one hoverbox
             if (timeoutId) {
@@ -126,9 +125,10 @@ function makeProcessObjectView(store, procObj, procIndex) {
 export default ({ store }) => {
     let { processes, visibilityFilter } = store.getState()
 
-    if (visibilityFilter) {
-        processes = processes.filter(visibilityFilter)
-    }
+    // TODO just render `processes` -> see `searchProcesses.js`
+    // if (visibilityFilter) {
+    //     processes = processes.filter(visibilityFilter)
+    // }
 
     return (
         <section>

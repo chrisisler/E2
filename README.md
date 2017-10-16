@@ -8,13 +8,18 @@ E2 allows you to easily manage and gain insight into the processes running on yo
   - the unfiltered process gets highlighted/marked.
 - Notification CSS
 - Support Windows
+  - getProcesses(Sync/Async) for Windows
+  - killProcess for Windows
 - Installation
+  - Windows
+  - macOS
 - dark/light themes in config view
   - make em persist locally
 
 ### Wanted Features
 
 - separate un/marking processes
+- `asPercentage` function in `process-utils.js`
 - persist renames in state.
   - upon refresh, do the renames again.
 

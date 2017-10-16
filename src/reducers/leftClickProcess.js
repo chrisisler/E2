@@ -1,4 +1,5 @@
 import markProcesses from './markProcesses'
+import unmarkProcesses from './unmarkProcesses'
 import { updateStore, keysFrom } from '../shared'
 
 /** @type {[Any] -> Any} */
@@ -29,15 +30,15 @@ export default function leftClickProcess(store, payload) {
         // unmark all processes except for the clicked one.
         const indexes = keysFrom(store.getState().markedProcessesMap)
         if (indexes.length > 0) {
-            store = updateStore(store, markProcesses(store, { indexes }, false))
+            store = updateStore(store, unmarkProcesses(store, { indexes }))
         }
 
         // mark the clicked process
-        store = updateStore(store, markProcesses(store, { indexes: [procIndex] }, true))
+        store = updateStore(store, markProcesses(store, { indexes: [procIndex] }))
     }
     else if (altKeyPressed === true) {
         // just add the clicked process to the other marked processes
-        store = updateStore(store, markProcesses(store, { indexes: [procIndex] }, true))
+        store = updateStore(store, markProcesses(store, { indexes: [procIndex] }))
     }
     else if (shiftKeyPressed === true) {
         const lastIndex = last(keysFrom(store.getState().markedProcessesMap))
@@ -46,7 +47,7 @@ export default function leftClickProcess(store, payload) {
         const indexes = (lastIndex < procIndex)
             ? range(lastIndex, procIndex + 1) // need `+1` because procIndex is not yet marked.
             : range(procIndex, lastIndex)
-        store = updateStore(store, markProcesses(store, { indexes }, true))
+        store = updateStore(store, markProcesses(store, { indexes }))
     }
 
     // `store` has been constantly updated by callers to other reducers, return the state

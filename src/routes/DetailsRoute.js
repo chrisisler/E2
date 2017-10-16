@@ -8,7 +8,7 @@
 import { h } from 'preact'
 import glamorous from 'glamorous/preact'
 import { PROCESS_KEYS } from '../process-utils'
-// import { getDetailedProcessObj } from 'process-utils'
+import { getDetailedProcessObj } from '../process-utils'
 
 // const sortByMemory = procs => procs.sort((p1, p2) => p1.memory > p2.memory)
 
@@ -27,16 +27,16 @@ const DetailsWrap = glamorous.section({
     , width: '100vw'
 })
 
-export default ({ store }) => {
-    const { processes, previousSortKey } = store.getState()
+const Detail = glamorous.div({
 
-    let procObj = (previousSortKey === PROCESS_KEYS.memory)
-        ? procObj = processes[0]
-        : processes.sort((p1, p2) => Number(p1.memory) > Number(p2.memory))[0] // NOT WORKING
+})
+
+export default ({ store }) => {
+    const detailed = getDetailedProcessObj(store.getState().processes[0].pid)
 
     return (
         <DetailsWrap>
-            foo
+            {items.map(value => )}
         </DetailsWrap>
     )
 }
