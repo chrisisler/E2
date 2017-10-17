@@ -13,4 +13,5 @@ export const keysFrom = map => [...map.keys()]
  * @param {Object} newState - Properties of state to update.
  * @returns {Object} - The new store.
  */
-export const updateStore = (store, newState) => ({ ...store, getState: () => newState })
+export const updateStore = (store, newState) =>
+    ({ ...store, getState: () => ({ ...store.getState(), ...newState }) })

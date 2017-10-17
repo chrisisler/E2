@@ -1,6 +1,7 @@
 import { h, render } from 'preact'
 import { route } from 'preact-router'
 import ActionsMenu from '../ActionsMenu'
+import closeActionsMenu from './closeActionsMenu'
 import markProcesses from './markProcesses'
 import unmarkProcesses from './unmarkProcesses'
 import { updateStore, keysFrom } from '../shared'
@@ -12,7 +13,10 @@ export default function rightClickProcess(store, payload) {
     // if actions menu already exists, close it
     if (prevState.actionsMenuNode != null) {
         // invoke the reducer, place the returned state in the new store
-        store = updateStore(store, closeActionsMenu(store))
+        // store = updateStore(store, closeActionsMenu(store))
+
+        // might change if the closeActionsMenu reducer returns attributes other than `actionsMenuNode`
+        closeActionsMenu(store)
     }
 
     // un-mark the previously marked processes
@@ -28,8 +32,8 @@ export default function rightClickProcess(store, payload) {
     // prepare props for the actions menu
     const { pageX: x, pageY: y } = payload.event
     const actions = _getActions(store, prevState.markedProcessesMap)
-    const closeActionsMenu = () => { store.dispatch('CLOSE_ACTIONS_MENU')} 
-    const actionsMenu = (<ActionsMenu {...{actions, x, y, closeActionsMenu}} />)
+    const dispatchCloseActionsMenu = () => { store.dispatch('CLOSE_ACTIONS_MENU') }
+    const actionsMenu = (<ActionsMenu {...{actions, x, y, dispatchCloseActionsMenu}} />)
 
     // render the actions menu
     const actionsMenuNode = render(actionsMenu, document.body)
@@ -47,7 +51,7 @@ export default function rightClickProcess(store, payload) {
  * @returns {[Object]} actions for dropdown menu
  */
 function _getActions(store, mapOfMarkedProcessesToKill) {
-    const { markedProcessesMap } = store.getState()
+    const { markedProcessesMap, renamesMap } = store.getState()
     const multipleProcessesAreMarked = markedProcessesMap.size > 1
 
     const cancelMenu =  { text: 'Cancel' }
@@ -68,6 +72,14 @@ function _getActions(store, mapOfMarkedProcessesToKill) {
         // retrieve the first <Number, Object> pair out of the map (ES6+ ftw!)
         const [ [ procIndex, proc ] ] = markedProcessesMap.entries()
         actions.push(_getRenameAction(store, proc.name, procIndex))
+
+        // if proc was renamed, add ability to revert back to original name
+        const nameHistory = renamesMap.get(proc.pid)
+        if (nameHistory !== void 0) {
+            actions.push({ text: 'Revert to original name', effect: () => {
+                store.dispatch('RENAME_PROCESS', { procIndex, newName: nameHistory.originalName })
+            }})
+        }
     }
 
     return actions

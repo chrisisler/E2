@@ -10,10 +10,17 @@ export default function renameProcess(store, payload) {
     let { processes, renamesMap } = store.getState()
     let proc = processes[procIndex]
 
+    const nameHistory = renamesMap.get(proc.pid)
+
     // record the renaming in the renamesMap
-    if (renamesMap.get(proc.pid) !== void 0) {
-        // the given proc has been renamed before, just update its latestName
-        renamesMap.get(proc.pid).latestName = newName
+    if (nameHistory !== void 0) {
+        // if updating name to original name, remove entry from the map
+        if (newName === nameHistory.originalName) {
+            renamesMap.delete(proc.pid)
+        } else {
+            // the given proc has been renamed before, just update its latestName
+            nameHistory.latestName = newName
+        }
     } else {
         // first time renaming the given proc obj
         renamesMap.set(proc.pid, { originalName: proc.name, latestName: newName })

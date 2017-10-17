@@ -40,19 +40,19 @@ const ActionItem = glamorous.li({
 const id = 'actions-menu'
 const persistClicksClass = 'persist-on-click'
 
-function didMount(closeActionsMenu) {
+function didMount(dispatchCloseActionsMenu) {
     document.addEventListener('click', (e) => {
         // If there's a `getChildComponent` sub-prop in `this.props` then allow
         // users to click on it without closing the actions menu.
         if (!e.path.filter(x => x.classList).some(x => [...x.classList].includes(persistClicksClass))) {
-            closeActionsMenu()
+            dispatchCloseActionsMenu()
             document.removeEventListener('click', document)
         }
     })
 }
 
-export default ({ actions, x, y, closeActionsMenu }) => {
-    didMount(closeActionsMenu)
+export default ({ actions, x, y, dispatchCloseActionsMenu }) => {
+    didMount(dispatchCloseActionsMenu)
     return (
         <ActionsMenuWrap x={x} y={y} id={id}>
             <ActionsList>
