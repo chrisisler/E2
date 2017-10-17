@@ -1,6 +1,5 @@
-import { h, render } from 'preact'
+import { h } from 'preact'
 import glamorous from 'glamorous/preact'
-import HoverBox from '../HoverBox' // for hover info
 
 const grayBackground = { backgroundColor: '#f3f3f3' }
 const transitionCSS = { transition: 'background-color ease 300ms' }
@@ -28,7 +27,7 @@ const ProcData = glamorous.p(transitionCSS, {
 }))
 
 const SearchInput = glamorous.input(grayBackground, {
-    padding: 8
+    padding: '8px 16px'
     , margin: '0 16px 8px 32px'
     , minWidth: 200
     , fontSize: 14
@@ -71,64 +70,8 @@ const Heading = ({ dispatch }) => (
     </ProcRow>
 )
 
-// TODO: add hover menu
-function makeProcessObjectView(store, procObj, procIndex) {
-    let timeoutId, hoverBoxRefNode
-
-    function mouseEnter() {
-        // keep track of mouse movement for rendering the hoverbox if users mouse stays there.
-        let x, y
-        document.addEventListener('mousemove', ({ pageX, pageY }) => {
-            x = pageX
-            y = pageY
-        })
-
-        timeoutId = setTimeout(() => {
-            // don't render more than one hoverbox
-            if (timeoutId) {
-                // wip
-                // hoverBoxRefNode = render(<HoverBox x={x} y={y} />, document.body)
-            }
-        }, 2000)
-    }
-
-    function mouseLeave(event) {
-        clearTimeout(timeoutId)
-
-        // do not unmount hoverbox from dom if hovering the hoverbox
-        if (hoverBoxRefNode) {
-            if (event.toElement.id !== hoverBoxRefNode.id) {
-                const domNode = document.getElementById(hoverBoxRefNode.id)
-                if (domNode) {
-                    domNode.remove()
-                }
-            }
-        }
-    }
-
-    return (
-        <ProcRow
-            key={procObj.pid}
-            isMarked={procObj.isMarked}
-            onClick={event => store.dispatch('LEFT_CLICK_PROCESS', { event, procIndex })}
-            onContextMenu={event => store.dispatch('RIGHT_CLICK_PROCESS', { event, procObj, procIndex })}
-            onMouseEnter={mouseEnter}
-            onMouseLeave={mouseLeave}
-        >
-            <ProcData title={procObj.name}>{procObj.name}</ProcData>
-            <ProcData>{procObj.pid}</ProcData>
-            <ProcData>{procObj.memory}</ProcData>
-        </ProcRow>
-    )
-}
-
 export default ({ store }) => {
-    let { processes, visibilityFilter } = store.getState()
-
-    // TODO just render `processes` -> see `searchProcesses.js`
-    // if (visibilityFilter) {
-    //     processes = processes.filter(visibilityFilter)
-    // }
+    const { processes, visibilityFilter } = store.getState()
 
     return (
         <section>
@@ -141,7 +84,18 @@ export default ({ store }) => {
             </RefreshButton>
             <Heading dispatch={store.dispatch} />
             <glamorous.Div overflow='scroll' height='80vh'>
-                {processes.map((procObj, procIndex) => makeProcessObjectView(store, procObj, procIndex))}
+                {processes.map((procObj, procIndex) => (
+                    <ProcRow
+                        key={procObj.pid}
+                        isMarked={procObj.isMarked}
+                        onClick={event => store.dispatch('LEFT_CLICK_PROCESS', { event, procIndex })}
+                        onContextMenu={event => store.dispatch('RIGHT_CLICK_PROCESS', { event, procObj, procIndex })}
+                    >
+                        <ProcData title={procObj.name}>{procObj.name}</ProcData>
+                        <ProcData>{procObj.pid}</ProcData>
+                        <ProcData>{procObj.memory}</ProcData>
+                    </ProcRow>
+                ))}
             </glamorous.Div>
         </section>
     )

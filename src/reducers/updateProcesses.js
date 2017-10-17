@@ -5,5 +5,14 @@
  * @returns {Object} - Properties of new state.
  */
 export default function updateProcesses(store, payload) {
-    return { processes: payload.processes }
+    const { renamesMap } = store.getState()
+    let { processes } = payload
+
+    // persist renames
+    renamesMap.forEach(({ latestName }, pid) => {
+        const idx = processes.findIndex(p => p.pid == pid)
+        processes[idx].name = latestName
+    })
+
+    return { processes }
 }

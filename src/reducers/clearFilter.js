@@ -1,4 +1,4 @@
-import { keysFrom } from '../'
+import { keysFrom } from '../shared'
 import unmarkProcesses from './unmarkProcesses'
 
 /**

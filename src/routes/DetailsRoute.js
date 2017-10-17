@@ -32,11 +32,11 @@ const Detail = glamorous.div({
 })
 
 export default ({ store }) => {
-    const detailed = getDetailedProcessObj(store.getState().processes[0].pid)
+    // const detailed = getDetailedProcessObj(store.getState().processes[0].pid)
 
     return (
         <DetailsWrap>
-            {items.map(value => )}
+            foo
         </DetailsWrap>
     )
 }

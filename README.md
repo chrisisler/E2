@@ -20,8 +20,6 @@ E2 allows you to easily manage and gain insight into the processes running on yo
 
 - separate un/marking processes
 - `asPercentage` function in `process-utils.js`
-- persist renames in state.
-  - upon refresh, do the renames again.
 
 ```
 /**

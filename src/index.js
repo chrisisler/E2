@@ -10,12 +10,13 @@ import reducers from './reducers/index'
 
 const getInitialState = () => ({
     processes: getProcessesSync() // [Object]
-    , markedProcessesMap: new Map() // Map
+    , markedProcessesMap: new Map() // Map<index: Number, proc: Object>
     , actionsMenuNode: null // DOMNode
     , doReverseSort: false // Boolean
     , previousSortKey: '' // String
     , visibilityFilter: null // Null or (procObj: Object) -> Boolean
     , unfilteredProcesses: [] // [Object]
+    , renamesMap: new Map() // Map<pid: Number, history: Object<originalName: String, latestName: String>>
 })
 
 const App = DispatchComponent({
