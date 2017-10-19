@@ -18,8 +18,7 @@ E2 allows you to easily manage and gain insight into the processes running on yo
 
 ### Wanted Features
 
-- separate un/marking processes
-- `asPercentage` function in `process-utils.js`
+none.
 
 ```
 /**
