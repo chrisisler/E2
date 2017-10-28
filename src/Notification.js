@@ -10,8 +10,9 @@ export const notificationTypes = {
 // Maps a notificationType to backgroundColor.
 // TODO Wire up to config
 const typeToColor = {
-    ERROR: '#e50000' // red
-    , SUCCESS: '#3c9a64' // green
+    ERROR: 'linear-gradient(to right, #c90000 0%,#bc0035 100%)' // red
+    // , SUCCESS: '#3c9a64' // green
+    , SUCCESS: 'linear-gradient(to right, #328256 0%,#3d998e 100%)' // green
 }
 
 const NotificationItem = glamorous.li({
@@ -22,9 +23,9 @@ const NotificationItem = glamorous.li({
     , width: '90%'
     , maxWidth: 640
     , textAlign: 'center'
-    , boxShadow: '1px 2px 5px 1px rgba(0, 0, 0, 0.35)'
+    , boxShadow: '2px 2px 3px 0 rgba(0, 0, 0, 0.4)'
 }, props => ({
-    backgroundColor: typeToColor[props.type]
+    background: typeToColor[props.type]
 }))
 
 const getUniqId = (() => {
@@ -43,8 +44,7 @@ export default class extends Component
         setTimeout(this.closeMe, this.props.timer || 4000)
     }
 
-    // `type` determines backgroundColor
-    /** @type { message: String, type: String } */
+    // the `type` string determines backgroundColor
     render({ message, type }) {
         const id = `notification-${getUniqId()}`
         return (

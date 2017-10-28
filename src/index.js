@@ -4,28 +4,13 @@ import { RouteWithHeader } from './Header'
 import ProcessesRoute from './routes/ProcessesRoute'
 import SettingsRoute from './routes/SettingsRoute'
 import DetailsRoute from './routes/DetailsRoute'
-import { getProcessesSync } from './process-utils'
-import reducer from './reducers/index'
-import createStore from './createStore'
-
-const initialState = {
-    processes: getProcessesSync() // [Object]
-    , markedProcessesMap: new Map() // Map<index: Number, proc: Object>
-    , actionsMenuNode: null // DOMNode
-    , doReverseSort: false // Boolean
-    , previousSortKey: '' // String
-    , visibilityFilter: null // Null or (procObj: Object) -> Boolean
-    , unfilteredProcesses: [] // [Object]
-    , renamesMap: new Map() // Map<pid: Number, history: Object<originalName: String, latestName: String>>
-}
-
-const store = createStore(reducer, initialState)
+import store from './store'
 
 class App extends Component
 {
-    constructor() {
-        super(...arguments)
-        store.onDispatch(state => this.setState(state))
+    componentWillMount() {
+        // Hook UI updates into store updates.
+        store.onDispatch(newState => { this.setState(newState) })
     }
 
     render = () => (

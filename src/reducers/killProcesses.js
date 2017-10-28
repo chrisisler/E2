@@ -1,45 +1,44 @@
 import { killProcess, getMemoryPercent } from '../process-utils'
+import { dispatch } from '../store'
 import { notificationTypes } from '../Notification'
 const { ERROR, SUCCESS } = notificationTypes
 
 /**
- * @param {Object} store
+ * @param {Object} state
  * @param {Object} payload - Data which changes state in some way.
  * @param {Map<Number, Object>} payload.mapOfMarkedProcessesToKill - <index, proc>
  * @returns {Promise} - A promise containing properties of the new state.
  */
-export default function killProcesses(store, payload) {
-    // An array of [Number, Object] pairs.
+export default function killProcesses(state, payload) {
+    // array of [Number, Object] pairs
     const indexObjectPairs = [...payload.mapOfMarkedProcessesToKill.entries()]
-    let { processes } = store.getState()
+    let { processes } = state
 
-    // Couple each promise with the object kill and its index
-    const promises = indexObjectPairs.map(([ procIndex, procObj ]) =>
+    // Couple each promise with the object killing promise and its according index
+    // after all those promises finish (in parallel), do work on the `settledPromises`
+    allSettled(indexObjectPairs.map(([ procIndex, procObj ]) =>
         killProcess(procObj.pid)
-            .then(didKill => ({ didKill, procObj, procIndex })))
-
-    allSettled(promises).then(settledPromises => {
-        const { resolved, rejected } = splitByState(settledPromises)
-        let message
+            .then(didKill => ({ didKill, procObj, procIndex }))
+    )).then(splitByState).then(({ resolved, rejected }) => {
+        let message // placeholder for dispatching notifications
 
         if (resolved.length !== 0) {
-            let freedMemory = 0 // summed `memory` property of all procs killed
+            let totalMemoryFreed = resolved.reduce((accum, resolvedPromise) => {
+                const { memory, name } = resolvedPromise.value.procObj
 
-            resolved.forEach(resolvedPromise => {
-                const { memory, pid, name } = resolvedPromise.value.procObj
-
-                freedMemory += Number(memory)
                 processes.splice(resolvedPromise.value.procIndex, 1) // mutate in place!
 
-                message = `Killed "${name}", freeing ${memory} [${getMemoryPercent(pid)}] memory!` 
-                store.dispatch('SHOW_NOTIFICATION', { message, type: SUCCESS })
-            })
+                message = `Killed "${name}", freeing ${memory} [${getMemoryPercent(memory)}] memory!` 
+                dispatch('SHOW_NOTIFICATION', { message, type: SUCCESS })
 
-            store.dispatch('UPDATE_PROCESSES', { processes })
+                return accum += Number(memory)
+            }, 0)
+
+            dispatch('UPDATE_PROCESSES', { processes })
 
             if (resolved.length > 1) {
-                message = `Killed ${resolved.length} processes, freeing ${freedMemory} memory!` 
-                store.dispatch('SHOW_NOTIFICATION', { message, type: SUCCESS })
+                message = `Killed ${resolved.length} processes, freeing ${totalMemoryFreed} memory!` 
+                dispatch('SHOW_NOTIFICATION', { message, type: SUCCESS })
             }
         }
 
@@ -50,12 +49,12 @@ export default function killProcesses(store, payload) {
 
             rejectedNames.forEach(name => {
                 message = `Could not kill "${name}"` 
-                store.dispatch('SHOW_NOTIFICATION', { message, type: ERROR })
+                dispatch('SHOW_NOTIFICATION', { message, type: ERROR })
             })
 
             if (rejected.length > 1) {
-                message = `Could not kill ${rejected.length} processes (out of ${settledPromises.length} total).`
-                store.dispatch('SHOW_NOTIFICATION', { message, type: ERROR })
+                message = `Could not kill ${rejected.length} processes (out of ${indexObjectPairs.length} total).`
+                dispatch('SHOW_NOTIFICATION', { message, type: ERROR })
             }
         }
     })

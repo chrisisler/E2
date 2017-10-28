@@ -1,6 +1,6 @@
 import markProcesses from './markProcesses'
 import unmarkProcesses from './unmarkProcesses'
-import { updateStore, keysFrom } from '../shared'
+import { keysFrom } from '../shared'
 
 /** @type {[Any] -> Any} */
 const last = x => x[x.length - 1]
@@ -14,11 +14,11 @@ const range = (start, end) => [...Array(end - start)].map((_, idx) => idx + star
  * - Ctrl + left-click a process to highlight multiple processes.
  * - Shift + left-click to highlight all processes between.
  *
- * @param {Object} store
+ * @param {Object} state
  * @param {Object} payload - Data which changes state in some way.
  * @returns {Object} - The new app state.
  */
-export default function leftClickProcess(store, payload) {
+export default function leftClickProcess(state, payload) {
     const { event, procIndex } = payload
 
     // which modifier keys was the user pressing when they left-clicked?
@@ -28,29 +28,27 @@ export default function leftClickProcess(store, payload) {
     if (!altKeyPressed && !shiftKeyPressed) {
 
         // unmark all processes except for the clicked one.
-        const indexes = keysFrom(store.getState().markedProcessesMap)
+        const indexes = keysFrom(state.markedProcessesMap)
         if (indexes.length > 0) {
-            store = updateStore(store, unmarkProcesses(store, { indexes }))
+            state = Object.assign(state, unmarkProcesses(state, { indexes }))
         }
 
         // mark the clicked process
-        store = updateStore(store, markProcesses(store, { indexes: [procIndex] }))
+        state = Object.assign(state, markProcesses(state, { indexes: [procIndex] }))
     }
     else if (altKeyPressed === true) {
         // just add the clicked process to the other marked processes
-        store = updateStore(store, markProcesses(store, { indexes: [procIndex] }))
+        state = Object.assign(state, markProcesses(state, { indexes: [procIndex] }))
     }
     else if (shiftKeyPressed === true) {
-        const lastIndex = last(keysFrom(store.getState().markedProcessesMap))
+        const lastIndex = last(keysFrom(state.markedProcessesMap))
 
         // mark every process between `lastIndex` and `procIndex`
         const indexes = (lastIndex < procIndex)
             ? range(lastIndex, procIndex + 1) // need `+1` because procIndex is not yet marked.
             : range(procIndex, lastIndex)
-        store = updateStore(store, markProcesses(store, { indexes }))
+        state = Object.assign(state, markProcesses(state, { indexes }))
     }
 
-    // `store` has been constantly updated by callers to other reducers, return the state
-    const state = store.getState()
     return state
 }

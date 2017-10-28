@@ -1,21 +1,19 @@
-import { keysFrom, updateStore } from '../shared'
-import unmarkProcesses from './unmarkProcesses'
+import { keysFrom } from '../shared'
+import markProcesses from './markProcesses'
 import updateProcesses from './updateProcesses'
 
-/**
- * @returns {Object} - Properties of the app state to update.
- */
-export default function clearFilter(store) {
-    const { markedProcessesMap, unfilteredProcesses } = store.getState()
+/** @type {(state: Object) -> newState: Object} */
+export default function clearFilter(state) {
+    const { markedProcessesMap, unfilteredProcesses, visibilityFilter } = state
 
-    // update store so that `getState` reflects that processes are now unfiltered
-    store = updateStore(store, updateProcesses(store, { processes: unfilteredProcesses }))
-
-    const indexes = keysFrom(markedProcessesMap)
-    const moreState = unmarkProcesses(store, { indexes })
-
-    return {
-        visibilityFilter: null
-        , ...moreState
+    // revert processes back to unfiltered (if applicable), clear the search
+    if (unfilteredProcesses.length !== 0 && visibilityFilter != null) {
+        state = { ...state, visibilityFilter: null }
+        state = Object.assign(state, updateProcesses(state, { processes: unfilteredProcesses }))
     }
+
+    // remark all previously marked processes
+    state = Object.assign(state, markProcesses(state, { indexes: keysFrom(markedProcessesMap) }))
+
+    return state
 }

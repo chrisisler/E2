@@ -10,20 +10,20 @@
  * does not have to be aware of that fact that the user issued a search.
  * It's hard to describe why this is needed (or even exactly how it works).
  *
- * @param {Object} store
+ * @param {Object} state
  * @param {Object} payload
  * @param {String|Number} payload.query
  * @returns {Object} - Properties of the app state to update.
  */
-export default function searchProcesses(store, payload) {
-    const unfilteredProcesses = store.getState().processes
+export default function searchProcesses(state, payload) {
+    const unfilteredProcesses = state.processes // the procs displayed before searching
     const { query } = payload
 
     if (query.length < 1) return
 
     const queryIsString = isNaN(query)
 
-    /** @type {Function (process: Object) -> Boolean} */
+    /** @type {Function (proc: Object) -> Boolean} */
     const visibilityFilter = (queryIsString === true)
         ? (proc) => proc.name.toLowerCase().includes(query.toLowerCase()) // searching for process name
         : (proc) => String(proc.pid).includes(query) // searching for process ID

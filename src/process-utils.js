@@ -1,60 +1,78 @@
 import { exec, execSync } from 'child_process'
-import { EOL } from 'os'
+import { EOL, totalmem as totalMemoryInBytes } from 'os'
 
-/** @type {() -> Boolean} */
-// const isWindows = () => process.platform.startsWith('win')
+const totalMemoryInKilobytes = totalMemoryInBytes() / 1024
+const windowsCommand = 'tasklist /fo csv /nh' // format: csv. no headers.
+const macOsCommand = 'ps -axco pid=,rss=,command='
+const options = { encoding: 'utf8' }
 
-export const PROCESS_KEYS = {
-    name: 'name'
-    , pid: 'pid'
-    , memory: 'memory'
-
-    // Properties for  "detailed" processes, with more keys/info.
-    , percentCPU: 'percentCPU' 
-    // etc...
-}
-
-const makeProcessObjFromStr = s => {
-    const [ pid, memory, name ] = s.split(' ')
-    return { pid, memory, name }
-}
+/**
+ * Attempting to cache the result in a closure.
+ * @type {() -> Boolean}
+ */
+const isWindows = (() => {
+    let cache = {}
+    return () =>
+        'platformIsWindows' in cache
+            ? cache.platformIsWindows
+            : cache.platformIsWindows = process.platform.startsWith('win')
+})()
 
 /** @type {String -> String} */
 const stripExtraWhitespace = str => str.trim().replace(/\s+/g, ' ')
 
 /**
  * @private
+ * @param {String} csv - The comma separated list from the terminal output
+ * @returns {[Object]} processes - An array of the computer's current running processes as objects.
+ */
+const _getProcessesWindows = csv => csv
+    .split(EOL)
+    .map(line => {
+        // split by comma, excluding `memory`
+        const lineParts = JSON.parse(`[${line.trim()}]`)
+
+        const [ name, pid, , , memory ] = lineParts
+        return { name, pid, memory }
+    })
+
+/**
+ * @private
  * @param {String} string - The input of the CLI command.
  * @returns {[Object]} processes - An array of the computer's current running processes as objects.
  */
-const _getProcesses = str => str
+const _getProcessesMacOs = csv => csv
     .split(EOL)
     .map(stripExtraWhitespace)
     .filter(Boolean)
-    .map(makeProcessObjFromStr)
-
-const command = 'ps -axco pid=,rss=,command='
-const options = { encoding: 'utf8' }
+    .map(s => {
+        const [ pid, memory, name ] = s.split(' ')
+        return { pid, memory, name }
+    })
 
 /**
  * This is the important export.
  * @returns {[Object]} processes - Retrieved synchronously.
  */
 export const getProcessesSync = () =>
-    _getProcesses(execSync(command, options))
+    isWindows()
+        ? _getProcessesWindows(execSync(windowsCommand, options))
+        : _getProcessesMacOs(execSync(macOsCommand, options))
 
 /**
+ * @todo make Windows equivalent
  * @see getProcessesSync For the sync version.
  * @returns {Promise<Array[Object]>} - Array of process objects retrieved asynchronously.
  */
 export const getProcessesAsync = () =>
     new Promise((resolve, reject) => {
+        const command = isWindows() ? windowsCommand : macOsCommand
         /* eslint-disable no-unused-vars */
         exec(command, options, (err, stdout, stderr) => {
             if (err) reject(err)
             resolve(stdout)
         })
-    }).then(processesCsv => _getProcesses(processesCsv))
+    }).then(processesCsv => getProcessesSync(processesCsv))
 
 
 /**
@@ -62,11 +80,11 @@ export const getProcessesAsync = () =>
  * @param {String} str
  * @returns {Object} - Detailed process Object.
  */
-const _makeDetailedProcessObjFromStr = str => {
-    str = stripExtraWhitespace(str)
-    const [ percentCPU, percentMemory, memory, runningTime, parentPID, user, status ] = str.split(' ')
-    return { percentCPU, percentMemory, memory, runningTime, parentPID, user, status }
-}
+// const _makeDetailedProcessObjFromStr = str => {
+//     str = stripExtraWhitespace(str)
+//     const [ percentCPU, percentMemory, memory, runningTime, parentPID, user, status ] = str.split(' ')
+//     return { percentCPU, percentMemory, memory, runningTime, parentPID, user, status }
+// }
 
 /**
  * %cpu: percantage cpu usage
@@ -78,20 +96,21 @@ const _makeDetailedProcessObjFromStr = str => {
  * user: who started this process
  * stat: if includes "S", then is display: `status: sleeping`
  *
- * Additional:
  * - How many processes of this name
  *     - if not singular process, display %cpu, %mem, and rss for the summated process.
  *
+ * @todo make Windows equivalent
  * @todo make async?
  * @param {String} pid - The process ID of some process object.
  * @returns {Object} - An enhanced process object with more properties.
  */
-export const getDetailedProcessObj = pid =>
-    _makeDetailedProcessObjFromStr(execSync(`ps -p ${pid} -cxo pid=,rss=,command=,%cpu=,%mem=,etime=,ppid=,user=,stat=`, options))
+// export const getDetailedProcessObj = pid =>
+//     _makeDetailedProcessObjFromStr(execSync(`ps -p ${pid} -cxo pid=,rss=,command=,%cpu=,%mem=,etime=,ppid=,user=,stat=`, options))
 
 /**
  * Maps a process id String|Number to a Promise (to kill that object).
  *
+ * @see https://nodejs.org/api/process.html#process_process_kill_pid_signal
  * @param {String|Number} pid - The process ID
  * @param {String|Number} signal - signal to send to the process obj with given `pid`.
  * @returns {Promise<Boolean|Undefined>} - `then` arg is `true` if kill succeeded, `undefined` otherwise.
@@ -99,17 +118,16 @@ export const getDetailedProcessObj = pid =>
 export const killProcess = (pid, signal = 'SIGTERM') =>
     Promise.resolve().then(() => {
         try {
-            // https://nodejs.org/api/process.html#process_process_kill_pid_signal
-            /** @returns {Boolean|Undefined} - true if successfull kill, undefined otherwise. */
             return process.kill(Number(pid), signal)
         } catch (err) {
-            // if (err.code !== 'ESRCH') throw err // ESRCH: No process or process group can be found corresponding to that specified by pid.
             throw err
         }
     })
 
 /**
- * @param {String|Number} memory
+ * @todo make it work
+ * @param {String|Number} memoryInKilobytes - The `memory` value of some proc Obj.
  * @returns {String} - Memory as a percentage of total.
  */
-export const getMemoryPercent = pid => execSync(`ps -p ${pid} -cxo %mem=`, options)
+export const getMemoryPercent = memoryInKilobytes =>
+    ((memoryInKilobytes / totalMemoryInKilobytes) * 100).toFixed(1) + '%'

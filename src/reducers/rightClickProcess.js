@@ -4,54 +4,52 @@ import ActionsMenu from '../ActionsMenu'
 import closeActionsMenu from './closeActionsMenu'
 import markProcesses from './markProcesses'
 import unmarkProcesses from './unmarkProcesses'
-import { updateStore, keysFrom } from '../shared'
+import { keysFrom } from '../shared'
+import store from '../store'
 
-export default function rightClickProcess(store, payload) {
+export default function rightClickProcess(state, payload) {
     const { procObj, procIndex: procIndexToMark } = payload
-    const prevState = store.getState()
+    const prevState = { ...state }
 
     // if actions menu already exists, close it
     if (prevState.actionsMenuNode != null) {
-        // invoke the reducer, place the returned state in the new store
-        // store = updateStore(store, closeActionsMenu(store))
+        state = Object.assign(state, closeActionsMenu(state))
 
         // might change if the closeActionsMenu reducer returns attributes other than `actionsMenuNode`
-        closeActionsMenu(store)
+        closeActionsMenu(state)
     }
 
     // un-mark the previously marked processes
     if (prevState.markedProcessesMap.size > 0 && !procObj.isMarked) {
         const indexes = keysFrom(prevState.markedProcessesMap)
-        store = updateStore(store, unmarkProcesses(store, { indexes }))
+        state = Object.assign(state, unmarkProcesses(state, { indexes }))
     }
 
     // mark the clicked processes
-    const updatedState = markProcesses(store, { indexes: [procIndexToMark] })
-    store = updateStore(store, updatedState)
+    state = Object.assign(state, markProcesses(state, { indexes: [procIndexToMark] }))
 
     // prepare props for the actions menu
     const { pageX: x, pageY: y } = payload.event
-    const actions = _getActions(store, prevState.markedProcessesMap)
+    const actions = _getActions(state, prevState.markedProcessesMap)
     const dispatchCloseActionsMenu = () => { store.dispatch('CLOSE_ACTIONS_MENU') }
     const actionsMenu = (<ActionsMenu {...{actions, x, y, dispatchCloseActionsMenu}} />)
 
-    // render the actions menu
+    // render the actions menu and assign the rendered dom node ref to state
     const actionsMenuNode = render(actionsMenu, document.body)
-    const state = { ...store.getState(), actionsMenuNode }
-    return state
+    return Object.assign(state, { actionsMenuNode })
 }
 
 /**
  * Create options for dropdown menu.
  *
  * @private
- * @param {Object} store
+ * @param {Object} state
  * @param {Map<Number, Object>} mapOfMarkedProcessesToKill
  *   - Keys are the indexes of the objects (that need killing), Values are the (process) objects.
  * @returns {[Object]} actions for dropdown menu
  */
-function _getActions(store, mapOfMarkedProcessesToKill) {
-    const { markedProcessesMap, renamesMap } = store.getState()
+function _getActions(state, mapOfMarkedProcessesToKill) {
+    const { markedProcessesMap, renamesMap } = state
     const multipleProcessesAreMarked = markedProcessesMap.size > 1
 
     const cancelMenu =  { text: 'Cancel' }
@@ -71,7 +69,7 @@ function _getActions(store, mapOfMarkedProcessesToKill) {
     if (!multipleProcessesAreMarked) {
         // retrieve the first <Number, Object> pair out of the map (ES6+ ftw!)
         const [ [ procIndex, proc ] ] = markedProcessesMap.entries()
-        actions.push(_getRenameAction(store, proc.name, procIndex))
+        actions.push(_getRenameAction(proc.name, procIndex))
 
         // if proc was renamed, add ability to revert back to original name
         const nameHistory = renamesMap.get(proc.pid)
@@ -87,12 +85,11 @@ function _getActions(store, mapOfMarkedProcessesToKill) {
 
 /**
  * @private
- * @param {Object} store
  * @param {String} currentName
  * @param {Number} procIndex
  * @returns {Object} - A clickable renaming action for the dropdown actions menu.
  */
-function _getRenameAction(store, currentName, procIndex) {
+function _getRenameAction(currentName, procIndex) {
     let inputDOMNode
     const RenameInput = (<input
         placeholder={currentName}

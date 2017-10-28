@@ -1,18 +1,15 @@
 /** @type {(String) -> String} */
 const toLower = s => String.prototype.toLowerCase.call(s)
 
-/** @type {[Any] -> [Any]} */
-const copyArray = array => Array.prototype.slice.call(array, 0)
-
 /**
- * @param {Object} store
+ * @param {Object} state
  * @param {Object} payload - Data which changes state in some way.
  * @returns {Object} - The new app state.
  */
-export default function sortProcesses(store, payload) {
+export default function sortProcesses(state, payload) {
     const sortKey = payload.key
-    let { doReverseSort, processes, previousSortKey } = store.getState()
-    processes = copyArray(processes)
+    let { doReverseSort, processes, previousSortKey } = state
+    processes = Array.prototype.slice.call(processes, 0) // duplicate
 
     if (previousSortKey === sortKey) {
         return { processes: processes.reverse() }

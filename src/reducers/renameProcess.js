@@ -1,13 +1,13 @@
 import closeActionsMenu from './closeActionsMenu'
 
 /**
- * @param {Object} store
+ * @param {Object} state
  * @param {Object} payload - Data which changes state in some way.
  * @returns {Object} - Contains properties of state to update.
  */
-export default function renameProcess(store, payload) {
+export default function renameProcess(state, payload) {
     const { newName, procIndex } = payload
-    let { processes, renamesMap } = store.getState()
+    let { processes, renamesMap } = state
     let proc = processes[procIndex]
 
     const nameHistory = renamesMap.get(proc.pid)
@@ -30,7 +30,7 @@ export default function renameProcess(store, payload) {
     proc.name = newName
 
     // closes the actions menu
-    const { actionsMenuNode } = closeActionsMenu(store)
+    const { actionsMenuNode } = closeActionsMenu(state)
 
     return { processes, actionsMenuNode, renamesMap }
 }
